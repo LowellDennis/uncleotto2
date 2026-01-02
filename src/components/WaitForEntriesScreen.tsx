@@ -45,6 +45,8 @@ export const WaitForEntriesScreen: React.FC = () => {
           if (payload.eventType === 'UPDATE') {
             const updatedGame = payload.new as Game;
             setGame(updatedGame);
+            // Check entries when game state changes
+            checkPlayerEntries();
           } else if (payload.eventType === 'DELETE') {
             // Game was ended by host
             const hostPlayer = players.find(p => p.is_host);
@@ -165,6 +167,17 @@ export const WaitForEntriesScreen: React.FC = () => {
       checkPlayerEntries();
     }
   }, [game, players.length, gameId]);
+
+  // Polling fallback for browsers with unreliable Realtime (Safari/iOS)
+  useEffect(() => {
+    if (!gameId || !game || hasNavigated.current) return;
+
+    const pollInterval = setInterval(() => {
+      checkPlayerEntries();
+    }, 2000); // Check every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [gameId, game, players.length]);
 
   const checkPlayerEntries = async () => {
     if (!gameId || !game || hasNavigated.current) return;
