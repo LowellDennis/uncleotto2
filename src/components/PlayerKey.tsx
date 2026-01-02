@@ -40,7 +40,7 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
     <div className="player-key">
       <div className="player-list">
         {sortedPlayers.map((player) => {
-          const isKickable = showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId;
+          const isKickable = !!(showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId);
           const isReady = playersReady?.has(player.id) || false;
           return (
             <PlayerBadge
