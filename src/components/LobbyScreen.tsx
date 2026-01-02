@@ -43,10 +43,12 @@ export const LobbyScreen: React.FC = () => {
         },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
-            setGame(payload.new as Game);
+            const updatedGame = payload.new as Game;
+            setGame(updatedGame);
             
             // If game started, navigate to entry screen
-            if ((payload.new as Game).status === 'in_progress') {
+            if (updatedGame.status === 'in_progress') {
+              console.log('Game started, navigating to entry screen');
               navigate(`/game/${gameId}/entry`);
             }
           } else if (payload.eventType === 'DELETE') {
@@ -109,6 +111,20 @@ export const LobbyScreen: React.FC = () => {
       channel.unsubscribe();
     };
   }, [gameId, navigate]);
+
+  // Reload when page becomes visible (device wakes up)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && gameId) {
+        loadGameData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [gameId]);
 
   const loadGameData = async () => {
     if (!gameId) return;
