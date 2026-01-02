@@ -179,7 +179,13 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleStartGame = async () => {
-    if (!gameId || !game || !currentPlayer?.is_host) return;
+    console.log('Start game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host, playerCount: players.length });
+    
+    if (!gameId || !game || !currentPlayer?.is_host) {
+      console.error('Cannot start game:', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+      alert('You are not the host or game data is missing');
+      return;
+    }
     
     if (players.length < 2) {
       setError('Need at least 2 players to start');
@@ -189,13 +195,17 @@ export const LobbyScreen: React.FC = () => {
 
     setStartingGame(true);
     try {
+      console.log('Calling gameService.startGame...');
       const { error } = await gameService.startGame(gameId);
       if (error) {
+        console.error('Error from startGame:', error);
         throw error;
       }
-      // Navigation will happen automatically via realtime subscription
+      console.log('Game started successfully');
+      // Navigation will happen automatically via realtime subscription or polling
     } catch (err) {
       console.error('Error starting game:', err);
+      alert(`Failed to start game: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setError('Failed to start game');
       setTimeout(() => setError(null), 3000);
       setStartingGame(false);
@@ -222,7 +232,13 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleEndGame = async () => {
-    if (!gameId || !game || !currentPlayer?.is_host) return;
+    console.log('End game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+    
+    if (!gameId || !game || !currentPlayer?.is_host) {
+      console.error('Cannot end game:', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+      alert('You are not the host or game data is missing');
+      return;
+    }
 
     if (!confirm('Are you sure you want to end this game? This will save all players\' lifetime scores and return everyone to the lobby.')) {
       return;
@@ -230,10 +246,17 @@ export const LobbyScreen: React.FC = () => {
 
     setLeavingGame(true);
     try {
-      await gameService.deleteGame(gameId);
+      console.log('Calling gameService.deleteGame...');
+      const result = await gameService.deleteGame(gameId);
+      if (result.error) {
+        console.error('Error from deleteGame:', result.error);
+        throw result.error;
+      }
+      console.log('Game ended successfully');
       navigate('/');
     } catch (err) {
       console.error('Error ending game:', err);
+      alert(`Failed to end game: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setError('Failed to end game');
       setTimeout(() => setError(null), 3000);
       setLeavingGame(false);
@@ -241,17 +264,37 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleKickPlayer = async (playerId: string) => {
-    if (!gameId || !currentPlayer?.is_host) return;
+    console.log('Kick player clicked', { playerId, gameId, isHost: currentPlayer?.is_host, playerCount: players.length });
+    
+    if (!gameId || !currentPlayer?.is_host) {
+      console.error('Cannot kick player:', { gameId, isHost: currentPlayer?.is_host });
+      alert('You are not the host or game data is missing');
+      return;
+    }
 
     try {
       // If only 2 players, kicking one will end the game
       if (players.length === 2) {
-        await gameService.deleteGame(gameId);
+        console.log('Kicking last player - ending game');
+        const result = await gameService.deleteGame(gameId);
+        if (result.error) {
+          console.error('Error from deleteGame:', result.error);
+          throw result.error;
+        }
+        console.log('Game ended after kick');
+        navigate('/');
       } else {
-        await gameService.leaveGame(gameId, playerId);
+        console.log('Kicking player');
+        const result = await gameService.leaveGame(gameId, playerId);
+        if (result.error) {
+          console.error('Error from leaveGame:', result.error);
+          throw result.error;
+        }
+        console.log('Player kicked successfully');
       }
     } catch (err) {
       console.error('Error kicking player:', err);
+      alert(`Failed to kick player: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setError('Failed to kick player');
       setTimeout(() => setError(null), 3000);
     }
