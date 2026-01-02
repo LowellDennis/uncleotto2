@@ -49,7 +49,7 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
               isKickable={isKickable}
               onClick={() => handlePlayerClick(player)}
               showReady={isReady}
-              showLifetimeScore={showLifetimeScore || false}
+              showLifetimeScore={!!showLifetimeScore}
             />
           );
         })}
