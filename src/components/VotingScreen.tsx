@@ -182,9 +182,13 @@ export const VotingScreen: React.FC = () => {
         .from('entries')
         .select('*')
         .eq('game_id', gameData.id)
-        .eq('round', gameData.current_round);
+        .eq('round', gameData.current_round)
+        .order('category', { ascending: true })
+        .order('player_id', { ascending: true });
 
       if (entriesError) throw entriesError;
+
+      console.log('Loaded entries for voting:', entriesData);
 
       if (!entriesData || entriesData.length === 0) {
         setError('No entries found for this round');
@@ -201,8 +205,11 @@ export const VotingScreen: React.FC = () => {
         } as WordEntry;
       });
 
+      console.log('Entries with player info:', entriesWithPlayerInfo);
+
       // Generate sentences
       const generatedSentences = generateSentences(entriesWithPlayerInfo, playersData);
+      console.log('Generated sentences:', generatedSentences);
       setSentences(generatedSentences);
     } catch (err) {
       console.error('Error loading entries:', err);
