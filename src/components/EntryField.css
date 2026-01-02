@@ -1,0 +1,65 @@
+.entry-field {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.entry-field:last-child {
+  margin-bottom: 0;
+}
+
+.entry-field label {
+  font-family: 'Chewy', cursive;
+  font-size: 1.1rem;
+  color: #333;
+  min-width: 60px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.entry-field textarea {
+  width: 100%;
+  padding: 8px;
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: 1.2rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  resize: none;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.entry-field textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.entry-field textarea::placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.char-counter {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  pointer-events: none;
+  background: white;
+  padding: 1px 3px;
+  border-radius: 2px;
+}

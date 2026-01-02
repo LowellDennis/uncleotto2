@@ -1,0 +1,139 @@
+.voting-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: white;
+}
+
+.voting-content {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 8px 20px 12px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.sentences-container {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.voting-instructions {
+  font-family: 'Chewy', cursive;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: #667eea;
+  text-align: center;
+  padding: 4px 8px;
+  background: white;
+  border-radius: 0;
+  margin-left: -20px;
+  margin-right: -20px;
+  width: calc(100% + 40px);
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.sentence {
+  font-family: 'Chewy', cursive;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  padding: 6px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  text-align: center;
+}
+
+.word {
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 500;
+  position: relative;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  flex-shrink: 1;
+  min-width: 0;
+  font-weight: 500;
+  position: relative;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.word.clickable {
+  cursor: pointer;
+}
+
+.word.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.word.own-word {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.word.voted {
+  border: 3px solid rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+}
+
+.vote-check {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.voting-actions {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.start-button {
+  font-family: 'Chewy', cursive;
+  font-size: 1rem;
+  padding: 8px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.start-button:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.start-button:active {
+  transform: translateY(0);
+}
+
+.start-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -1,0 +1,64 @@
+.player-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+  min-width: 0;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.player-badge-kickable {
+  cursor: pointer;
+}
+
+.player-badge-kickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+}
+
+.player-badge-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Chewy', cursive;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.host-badge {
+  font-size: 0.9rem;
+  padding: 0;
+  margin: 0;
+  color: rgba(255, 215, 0, 1);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.player-badge-score {
+  font-family: 'Chewy', cursive;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.8);
+  min-width: 25px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+}
+
+.ready-indicator {
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 1.3rem;
+  font-weight: bold;
+}
