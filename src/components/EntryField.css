@@ -26,7 +26,7 @@
 .entry-field textarea {
   width: 100%;
   padding: 8px;
-  font-family: 'Nanum Pen Script', cursive;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   font-size: 1.2rem;
   border: 2px solid #cbd5e1;
   border-radius: 6px;
