@@ -126,6 +126,25 @@ export const LobbyScreen: React.FC = () => {
     };
   }, [gameId]);
 
+  // Polling fallback for game status (especially important for Safari/iOS)
+  useEffect(() => {
+    if (!gameId) return;
+
+    const pollInterval = setInterval(async () => {
+      const { data: gameData } = await supabase
+        .from('games')
+        .select('status')
+        .eq('id', gameId)
+        .single();
+
+      if (gameData?.status === 'in_progress') {
+        navigate(`/game/${gameId}/entry`);
+      }
+    }, 1000); // Check every second
+
+    return () => clearInterval(pollInterval);
+  }, [gameId, navigate]);
+
   const loadGameData = async () => {
     if (!gameId) return;
 
