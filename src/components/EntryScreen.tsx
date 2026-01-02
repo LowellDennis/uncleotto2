@@ -6,7 +6,7 @@ import { PlayerKey } from './PlayerKey';
 import { EntryField } from './EntryField';
 import { Footer } from './Footer';
 import { useAuth } from '../contexts/AuthContext';
-import type { Game, Player, Entry } from '../types/database.types';
+import type { Game, Player } from '../types/database.types';
 import { supabase } from '../lib/supabase';
 import { gameService } from '../lib/gameService';
 import './EntryScreen.css';
@@ -114,7 +114,7 @@ export const EntryScreen: React.FC = () => {
           } else if (payload.eventType === 'DELETE') {
             // Game was ended by host
             const hostPlayer = players.find(p => p.is_host);
-            const hostName = hostPlayer?.display_name || 'The host';
+            const hostName = hostPlayer?.name || 'The host';
             alert(`${hostName} has ended the game!`);
             navigate('/');
           }

@@ -49,7 +49,7 @@ export const WaitForVotesScreen: React.FC = () => {
           } else if (payload.eventType === 'DELETE') {
             // Game was ended by host
             const hostPlayer = players.find(p => p.is_host);
-            const hostName = hostPlayer?.display_name || 'The host';
+            const hostName = hostPlayer?.name || 'The host';
             alert(`${hostName} has ended the game!`);
             navigate('/');
           }
