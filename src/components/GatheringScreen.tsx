@@ -76,8 +76,23 @@ export function GatheringScreen() {
       }
     );
 
+    // Reload games when page becomes visible (device wakes up)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadGames();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Polling fallback for mobile devices (every 5 seconds)
+    const pollInterval = setInterval(() => {
+      loadGames();
+    }, 5000);
+
     return () => {
       channel.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(pollInterval);
     };
   }, [])
 
