@@ -180,10 +180,12 @@ export const LobbyScreen: React.FC = () => {
 
   const handleStartGame = async () => {
     alert('Start Game button clicked!'); // Immediate feedback
-    console.log('Start game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host, playerCount: players.length });
+    console.log('Start game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host, userIsHost: user?.id === game?.host_id, playerCount: players.length });
     
-    if (!gameId || !game || !currentPlayer?.is_host) {
-      console.error('Cannot start game:', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+    const isHost = currentPlayer?.is_host || user?.id === game?.host_id;
+    
+    if (!gameId || !game || !isHost) {
+      console.error('Cannot start game:', { gameId, hasGame: !!game, isHost });
       alert('You are not the host or game data is missing');
       return;
     }
@@ -234,10 +236,12 @@ export const LobbyScreen: React.FC = () => {
 
   const handleEndGame = async () => {
     alert('End Game button clicked!'); // Immediate feedback
-    console.log('End game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+    console.log('End game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host, userIsHost: user?.id === game?.host_id });
     
-    if (!gameId || !game || !currentPlayer?.is_host) {
-      console.error('Cannot end game:', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
+    const isHost = currentPlayer?.is_host || user?.id === game?.host_id;
+    
+    if (!gameId || !game || !isHost) {
+      console.error('Cannot end game:', { gameId, hasGame: !!game, isHost });
       alert('You are not the host or game data is missing');
       return;
     }
@@ -264,10 +268,12 @@ export const LobbyScreen: React.FC = () => {
       setLeavingGame(false);
     }
   };
-
-  const handleKickPlayer = async (playerId: string) => {
-    console.log('Kick player clicked', { playerId, gameId, isHost: currentPlayer?.is_host, playerCount: players.length });
+userIsHost: user?.id === game?.host_id, playerCount: players.length });
     
+    const isHost = currentPlayer?.is_host || user?.id === game?.host_id;
+    
+    if (!gameId || !isHost) {
+      console.error('Cannot kick player:', { gameId, isH
     if (!gameId || !currentPlayer?.is_host) {
       console.error('Cannot kick player:', { gameId, isHost: currentPlayer?.is_host });
       alert('You are not the host or game data is missing');
