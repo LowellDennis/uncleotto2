@@ -268,14 +268,14 @@ export const LobbyScreen: React.FC = () => {
       setLeavingGame(false);
     }
   };
-userIsHost: user?.id === game?.host_id, playerCount: players.length });
+
+  const handleKickPlayer = async (playerId: string) => {
+    console.log('Kick player clicked', { playerId, gameId, isHost: currentPlayer?.is_host, userIsHost: user?.id === game?.host_id, playerCount: players.length });
     
     const isHost = currentPlayer?.is_host || user?.id === game?.host_id;
     
     if (!gameId || !isHost) {
-      console.error('Cannot kick player:', { gameId, isH
-    if (!gameId || !currentPlayer?.is_host) {
-      console.error('Cannot kick player:', { gameId, isHost: currentPlayer?.is_host });
+      console.error('Cannot kick player:', { gameId, isHost });
       alert('You are not the host or game data is missing');
       return;
     }
