@@ -179,6 +179,7 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleStartGame = async () => {
+    alert('Start Game button clicked!'); // Immediate feedback
     console.log('Start game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host, playerCount: players.length });
     
     if (!gameId || !game || !currentPlayer?.is_host) {
@@ -232,6 +233,7 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleEndGame = async () => {
+    alert('End Game button clicked!'); // Immediate feedback
     console.log('End game clicked', { gameId, hasGame: !!game, isHost: currentPlayer?.is_host });
     
     if (!gameId || !game || !currentPlayer?.is_host) {
