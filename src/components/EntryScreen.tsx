@@ -409,7 +409,7 @@ export const EntryScreen: React.FC = () => {
             id="preposition"
             label="In the"
             value={entries.preposition}
-            placeholder="Beginning of a prepositional phrase"
+            placeholder="A preposition"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('preposition', value)}
           />
