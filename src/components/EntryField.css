@@ -55,8 +55,9 @@
   bottom: 4px;
   right: 8px;
   font-family: 'Nanum Pen Script', cursive;
-  font-size: 0.7rem;
-  color: #94a3b8;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
   pointer-events: none;
   background: white;
   padding: 1px 3px;
