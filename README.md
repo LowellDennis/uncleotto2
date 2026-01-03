@@ -313,8 +313,11 @@
    - Label width: reduced from 70px to 60px for more input space
    - Left padding: 8px (right padding: 20px preserved for scrollbar)
    - Gap between label and input: 4px (reduced from 6px)
-   - Textareas: fixed height (36px), horizontal scroll, no vertical resize
-   - Single-line input enforced with overflow-x: auto, white-space: nowrap
+   - Textareas: auto-growing from 36px to max 120px height
+   - Auto-resize via useEffect based on scrollHeight
+   - Vertical scroll with overflow-y when exceeding max height
+   - Character counter below each textarea (not overlaying)
+   - Single entry field per row, label above input
    
    **Wait Screens (WaitForEntriesScreen, WaitForVotesScreen):**
    - Message font: 1rem (reduced from 1.2rem)
@@ -337,12 +340,22 @@
    - Properly handles players array in state updates for DELETE events
 
 4. **Typography Standards**
-   - Primary font: 'Chewy' (non-cursive, playful)
-   - Input font: 'Nanum Pen Script' (handwriting-style for entries)
+   - Primary font: 'Chewy' (non-cursive, playful) for labels and headings
+   - Input font: 'Inter' (sans-serif) for all user inputs, placeholders, and character counters
+   - Web font loading: Google Fonts for consistent cross-platform rendering
+   - Font loaded in index.html: `Chewy&family=Inter:wght@400;600`
    - Blue accent color: #667eea (used for messages, round indicators, instructions)
    - Consistent font scaling across components for mobile readability
 
-5. **Spacing Standards**
+5. **Entry Field Layout (Mobile Optimized)**
+   - Vertical layout: label and input stacked, counter below
+   - Auto-growing textareas: min-height 36px, max-height 120px
+   - Dynamic height adjustment via useEffect based on content scrollHeight
+   - Character counter positioned below textarea (not overlaying)
+   - Overflow-y for vertical scrolling when content exceeds max height
+   - Eliminates horizontal scrolling for better mobile typing experience
+
+6. **Spacing Standards**
    - Vertical gaps between components: 12px typical, 8px tight, 2px minimal
    - Horizontal padding: 8px left (maximizes input width), 20px right (preserves scrollbar space)
    - Component margins: typically 12px vertical, 0 horizontal
@@ -478,8 +491,12 @@
         - Assigns player a color
   - Footer at bottom (minimal padding)
     - "Copyright © Cyberclops LLC" on left
-    - "Version YY.DDMM.HHmm" on right
+    - "V YYYY.MMDD.HHmm" on right (e.g., "V 2026.0103.0300")
     - Version constant stored in Footer.tsx component
+    - **CRITICAL:** Version number MUST be updated with EVERY git push
+      - Format: YYYY.MMDD.HHmm (4-digit year, 2-digit month, 2-digit day, 2-digit hour, 2-digit minute)
+      - Used to verify cache clearing and confirm deployment on mobile devices
+      - Update Footer.tsx APP_VERSION constant before each git push
 
 **UI Design Principles:**
 - Use horizontal divider lines instead of boxes to save screen real estate
@@ -561,16 +578,17 @@
 - If this is a subsequent round, entries from the prior round should be cleared.
 - The game header is displayed (see above).
 - Under this is the player key (see above) **showing game scores**.
-- Under this is a series of 6 single line text boxes that allow up to 1k of text to be entered into them.
-  - The text box can grow to multiple lines if needed.
-  - There is an indicator showing how many characters have been entered and how many remain (x/1024).
+- Under this is a series of 6 entry fields with auto-growing text boxes that allow up to 1k of text to be entered into them.
+  - Text boxes start at 36px height and grow to a maximum of 120px based on content.
+  - Vertical scrolling enabled when content exceeds maximum height.
+  - There is a character counter showing characters entered and remaining (x/1024) displayed below each text box.
 - The 6 text box prompts are:
-  - "Uncle" with help text "A title".
-  - "Otto" with help text "A name".
-  - "Splashes" with help text "An active verb".
-  - "Happily" with help text "An adverb".
-  - "In the" with help text "Beginning of a prepositional phrase".
-  - "Bathtub" with help text "A noun".
+  - "Uncle" with placeholder text "A title".
+  - "Otto" with placeholder text "A name".
+  - "Splashes" with placeholder text "An active verb".
+  - "Happily" with placeholder text "An adverb".
+  - "In the" with placeholder text "A preposition".
+  - "Bathtub" with placeholder text "A noun".
 - After these is a "Submit Entries" button (normal) and right justified.
   - Button is not active (clickable) until all text boxes have received some input.
   - Upon clicking this button:
