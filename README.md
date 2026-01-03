@@ -238,7 +238,7 @@
 
 2. **Kick Confirmation Messages**
    - **Normal kick (3+ players):** "Are you sure you want to kick [name] from the game?"
-   - **2-Player kick:** "Are you sure you want to kick [name] from the game? This will end the game."
+   - **2-Player kick:** "If you kick [name] from the game there will not be enough to continue. Are you sure?"
    - Warns host about game termination when only 2 players remain
 
 3. **Kick Behavior Logic**
@@ -416,7 +416,7 @@
 
 #### Host "End Game" Button
 - This button is a left justified Danger button that is always available to the host.
-- It has pop-up text "Are you sure you want to end this game?"
+- It has pop-up text "Are you sure you want to end the game?"
 - If the host confirms the game ends.
   - All players are taken back to the "Gathering Screen"
   - A a message stating "<host-name> has ended game <game-name>!" is displayed.
@@ -430,7 +430,9 @@
 
 #### Other Players "Leave Game" Button
 - This button is a left justified Danger button that is always avalable to non-hosts.
-- It has pop-up text "Are you sure you want to leave this game?"
+- It has pop-up text:
+  - **2 players:** "If you leave the game there will not be enough to continue. Are you sure?"
+  - **3+ players:** "Are you sure you want to leave this game?"
 - If a player confirms
   - They are taken to the "Gathering Screen".
   - All other players stay but receive a message stating "<player> has left the game!".
@@ -497,6 +499,10 @@
       - Format: YYYY.MMDD.HHmm (4-digit year, 2-digit month, 2-digit day, 2-digit hour, 2-digit minute)
       - Used to verify cache clearing and confirm deployment on mobile devices
       - Update Footer.tsx APP_VERSION constant before each git push
+    - **CRITICAL:** README.md MUST be updated with EVERY significant change
+      - Update relevant sections when changing user-facing messages, game flow, or UI behavior
+      - Keep confirmation messages, button behaviors, and game rules current
+      - Document new features, screens, or components as they're added
 
 **UI Design Principles:**
 - Use horizontal divider lines instead of boxes to save screen real estate
