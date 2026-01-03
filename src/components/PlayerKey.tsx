@@ -27,7 +27,7 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
     if (showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId) {
       const willEndGame = players.length === 2;
       const message = willEndGame 
-        ? `Are you sure you want to kick ${player.name} from the game? This will end the game.`
+        ? `If you kick ${player.name} from the game there will not be enough to continue. Are you sure?`
         : `Are you sure you want to kick ${player.name} from the game?`;
       
       if (confirm(message)) {
