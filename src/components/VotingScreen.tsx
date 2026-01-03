@@ -188,8 +188,6 @@ export const VotingScreen: React.FC = () => {
 
       if (entriesError) throw entriesError;
 
-      console.log('Loaded entries for voting:', entriesData);
-
       if (!entriesData || entriesData.length === 0) {
         setError('No entries found for this round');
         return;
@@ -205,14 +203,10 @@ export const VotingScreen: React.FC = () => {
         } as WordEntry;
       });
 
-      console.log('Entries with player info:', entriesWithPlayerInfo);
-
       // Generate sentences
       const generatedSentences = generateSentences(entriesWithPlayerInfo, playersData);
-      console.log('Generated sentences:', generatedSentences);
       setSentences(generatedSentences);
     } catch (err) {
-      console.error('Error loading entries:', err);
       setError(err instanceof Error ? err.message : 'Failed to load entries');
     }
   };
@@ -276,7 +270,6 @@ export const VotingScreen: React.FC = () => {
             .eq('id', entry.player_id);
           
           if (error) {
-            console.error('Error removing vote:', error);
             return;
           }
           
@@ -302,7 +295,6 @@ export const VotingScreen: React.FC = () => {
             .eq('id', entry.player_id);
           
           if (error) {
-            console.error('Error adding vote:', error);
             return;
           }
           
@@ -317,7 +309,6 @@ export const VotingScreen: React.FC = () => {
         setVotedEntries(newVotedEntries);
       }
     } catch (err) {
-      console.error('Error updating vote:', err);
     }
   };
 
@@ -331,7 +322,6 @@ export const VotingScreen: React.FC = () => {
       // Navigate to results waiting screen
       navigate(`/game/${gameId}/results-waiting`);
     } catch (err) {
-      console.error('Error finishing voting:', err);
       setError(err instanceof Error ? err.message : 'Failed to finish voting');
     } finally {
       setLoading(false);
@@ -346,7 +336,6 @@ export const VotingScreen: React.FC = () => {
         await gameService.deleteGame(game.id);
         navigate('/');
       } catch (err) {
-        console.error('Error ending game:', err);
         setError(err instanceof Error ? err.message : 'Failed to end game');
       }
     }
@@ -360,7 +349,6 @@ export const VotingScreen: React.FC = () => {
         await gameService.removePlayer(currentPlayer.id);
         navigate('/');
       } catch (err) {
-        console.error('Error leaving game:', err);
         setError(err instanceof Error ? err.message : 'Failed to leave game');
       }
     }
@@ -376,7 +364,6 @@ export const VotingScreen: React.FC = () => {
         await gameService.leaveGame(gameId, playerId);
       }
     } catch (err) {
-      console.error('Error kicking player:', err);
       setError(err instanceof Error ? err.message : 'Failed to kick player');
     }
   };

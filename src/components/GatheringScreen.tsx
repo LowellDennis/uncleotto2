@@ -22,11 +22,7 @@ export function GatheringScreen() {
 
   const handlePlayAsGuest = async () => {
     if (!user) {
-      const result = await signInAnonymously()
-      if (result.error) {
-        console.error('Failed to sign in as guest:', result.error)
-        alert('Failed to sign in as guest. Please try again.')
-      }
+      await signInAnonymously()
     }
   }
 
@@ -142,11 +138,9 @@ export function GatheringScreen() {
     
     const { error } = await updateUserMetadata(playerName, gameName)
     if (error) {
-      console.error('Error updating metadata:', error)
       alert('Failed to update profile')
     } else {
       setShowUpdateMetadata(false)
-      alert('Profile updated successfully!')
     }
   }
 
@@ -189,7 +183,6 @@ export function GatheringScreen() {
 
     if (error) {
       alert('Failed to create game. Please try again.')
-      console.error('Create game error:', error)
       return
     }
 
@@ -208,7 +201,6 @@ export function GatheringScreen() {
 
     if (error) {
       alert(error.message || 'Failed to join game. Please try again.')
-      console.error('Join game error:', error)
       return
     }
 

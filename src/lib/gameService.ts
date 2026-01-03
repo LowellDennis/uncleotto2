@@ -43,7 +43,6 @@ export const gameService = {
 
       return { lifetime_score: newStats.lifetime_score, games_played: newStats.games_played };
     } catch (error) {
-      console.error('Error getting user stats:', error);
       return { lifetime_score: 0, games_played: 0 };
     }
   },
@@ -71,7 +70,6 @@ export const gameService = {
         .single()
 
       if (gameError) {
-        console.error('Error creating game:', gameError)
         throw gameError
       }
 
@@ -93,7 +91,6 @@ export const gameService = {
         .single()
 
       if (playerError) {
-        console.error('Error creating player:', playerError)
         // Clean up the game if player creation fails
         await supabase.from('games').delete().eq('id', game.id)
         throw playerError
@@ -101,8 +98,6 @@ export const gameService = {
 
       return { game, player, error: null }
     } catch (error) {
-      console.error('Error creating game:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
       return { game: null, player: null, error }
     }
   },
@@ -173,7 +168,6 @@ export const gameService = {
 
       return { player, error: null }
     } catch (error) {
-      console.error('Error joining game:', error)
       return { player: null, error }
     }
   },
@@ -193,7 +187,6 @@ export const gameService = {
 
       return { games: games || [], error: null }
     } catch (error) {
-      console.error('Error fetching games:', error)
       return { games: [], error }
     }
   },
@@ -273,7 +266,6 @@ export const gameService = {
 
       return { error: null }
     } catch (error) {
-      console.error('Error leaving game:', error)
       return { error }
     }
   },
@@ -292,7 +284,6 @@ export const gameService = {
 
       return { error: null }
     } catch (error) {
-      console.error('Error starting game:', error)
       return { error }
     }
   },
@@ -347,7 +338,6 @@ export const gameService = {
 
       return { error: null }
     } catch (error) {
-      console.error('Error deleting game:', error)
       return { error }
     }
   },
@@ -366,7 +356,6 @@ export const gameService = {
 
       return { error: null }
     } catch (error) {
-      console.error('Error removing player:', error)
       return { error }
     }
   },

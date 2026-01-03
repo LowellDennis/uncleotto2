@@ -149,7 +149,6 @@ export const WaitForVotesScreen: React.FC = () => {
         navigate(`/game/${gameId}/entry`);
       }, 1000);
     } catch (err) {
-      console.error('Error starting next round:', err);
       setError(err instanceof Error ? err.message : 'Failed to start next round');
     }
   };
@@ -175,7 +174,6 @@ export const WaitForVotesScreen: React.FC = () => {
           .eq('id', player.id);
       }
     } catch (err) {
-      console.error('Error marking player ready:', err);
     }
   };
 
@@ -218,7 +216,6 @@ export const WaitForVotesScreen: React.FC = () => {
       );
       setPlayersReady(ready);
     } catch (err) {
-      console.error('Error loading game data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load game data');
     } finally {
       setLoading(false);
@@ -233,7 +230,6 @@ export const WaitForVotesScreen: React.FC = () => {
         await gameService.deleteGame(game.id);
         navigate('/');
       } catch (err) {
-        console.error('Error ending game:', err);
         setError(err instanceof Error ? err.message : 'Failed to end game');
       }
     }
@@ -247,7 +243,6 @@ export const WaitForVotesScreen: React.FC = () => {
         await gameService.removePlayer(currentPlayer.id);
         navigate('/');
       } catch (err) {
-        console.error('Error leaving game:', err);
         setError(err instanceof Error ? err.message : 'Failed to leave game');
       }
     }
@@ -263,7 +258,6 @@ export const WaitForVotesScreen: React.FC = () => {
         await gameService.leaveGame(gameId, playerId);
       }
     } catch (err) {
-      console.error('Error kicking player:', err);
       setError(err instanceof Error ? err.message : 'Failed to kick player');
     }
   };

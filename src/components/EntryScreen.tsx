@@ -201,7 +201,6 @@ export const EntryScreen: React.FC = () => {
       const player = playersData?.find(p => p.user_id === user?.id) || null;
       setCurrentPlayer(player);
     } catch (err) {
-      console.error('Error loading game data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load game data');
     } finally {
       setLoading(false);
@@ -264,7 +263,6 @@ export const EntryScreen: React.FC = () => {
       // Navigate to waiting screen
       navigate(`/game/${gameId}/waiting`);
     } catch (err) {
-      console.error('Error submitting entries:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit entries');
     } finally {
       setSubmitting(false);
@@ -279,7 +277,6 @@ export const EntryScreen: React.FC = () => {
         await gameService.deleteGame(game.id);
         navigate('/');
       } catch (err) {
-        console.error('Error ending game:', err);
         setError(err instanceof Error ? err.message : 'Failed to end game');
       }
     }
@@ -293,7 +290,6 @@ export const EntryScreen: React.FC = () => {
         await gameService.removePlayer(currentPlayer.id);
         navigate('/');
       } catch (err) {
-        console.error('Error leaving game:', err);
         setError(err instanceof Error ? err.message : 'Failed to leave game');
       }
     }
@@ -309,7 +305,6 @@ export const EntryScreen: React.FC = () => {
         await gameService.leaveGame(gameId, playerId);
       }
     } catch (err) {
-      console.error('Error kicking player:', err);
       setError(err instanceof Error ? err.message : 'Failed to kick player');
     }
   };

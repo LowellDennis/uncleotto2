@@ -155,7 +155,6 @@ export const WaitForEntriesScreen: React.FC = () => {
 
       setLoading(false);
     } catch (err) {
-      console.error('Error loading game data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load game data');
       setLoading(false);
     }
@@ -203,7 +202,6 @@ export const WaitForEntriesScreen: React.FC = () => {
         navigate(`/game/${gameId}/voting`);
       }
     } catch (err) {
-      console.error('Error checking player entries:', err);
     }
   };
 
@@ -215,7 +213,6 @@ export const WaitForEntriesScreen: React.FC = () => {
         await gameService.deleteGame(game.id);
         navigate('/');
       } catch (err) {
-        console.error('Error ending game:', err);
         setError(err instanceof Error ? err.message : 'Failed to end game');
       }
     }
@@ -229,7 +226,6 @@ export const WaitForEntriesScreen: React.FC = () => {
         await supabase.from('players').delete().eq('id', currentPlayer.id);
         navigate('/');
       } catch (err) {
-        console.error('Error leaving game:', err);
         setError(err instanceof Error ? err.message : 'Failed to leave game');
       }
     }
@@ -246,7 +242,6 @@ export const WaitForEntriesScreen: React.FC = () => {
         await gameService.leaveGame(gameId, playerId);
       }
     } catch (err) {
-      console.error('Error kicking player:', err);
       setError(err instanceof Error ? err.message : 'Failed to kick player');
     }
   };
