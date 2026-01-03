@@ -36,6 +36,7 @@ export const VotingScreen: React.FC = () => {
   const [votedEntries, setVotedEntries] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const gameDeleted = useRef(false);
 
   useEffect(() => {
     if (!gameId) {

@@ -21,6 +21,7 @@ export const WaitForVotesScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasNavigated = useRef(false);
+  const gameDeleted = useRef(false);
 
   useEffect(() => {
     if (!gameId) {
