@@ -211,7 +211,7 @@ export const WaitForEntriesScreen: React.FC = () => {
   const handleEndGame = async () => {
     if (!game) return;
     
-    if (confirm('Are you sure you want to end this game? This will save all players\' lifetime scores and return everyone to the lobby.')) {
+    if (confirm('Are you sure you want to end the game?')) {
       try {
         await gameService.deleteGame(game.id);
         navigate('/');
