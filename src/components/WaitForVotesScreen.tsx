@@ -48,6 +48,7 @@ export const WaitForVotesScreen: React.FC = () => {
             setGame(payload.new as Game);
           } else if (payload.eventType === 'DELETE') {
             // Game was ended by host
+            gameDeleted.current = true;
             const hostPlayer = players.find(p => p.is_host);
             const hostName = hostPlayer?.name || 'The host';
             alert(`${hostName} has ended the game!`);
@@ -84,9 +85,11 @@ export const WaitForVotesScreen: React.FC = () => {
           const remainingPlayers = players.filter(p => p.id !== deletedPlayer.id);
           setPlayers(remainingPlayers);
           
-          // End game if not enough players
+          // End game if not enough players (skip if game was already deleted by host)
           if (remainingPlayers.length < 2) {
-            alert('Not enough players to continue. Game ending.');
+            if (!gameDeleted.current) {
+              alert('Not enough players to continue. Game ending.');
+            }
             navigate('/');
             return;
           }

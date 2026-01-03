@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameHeader';
 import { Caption } from './Caption';
@@ -32,6 +32,7 @@ export const EntryScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const gameDeleted = useRef(false);
   
   // Initialize entries from localStorage if available
   const [entries, setEntries] = useState<EntryInputs>(() => {
@@ -113,6 +114,7 @@ export const EntryScreen: React.FC = () => {
             setGame(payload.new as Game);
           } else if (payload.eventType === 'DELETE') {
             // Game was ended by host
+            gameDeleted.current = true;
             const hostPlayer = players.find(p => p.is_host);
             const hostName = hostPlayer?.name || 'The host';
             alert(`${hostName} has ended the game!`);
@@ -149,9 +151,11 @@ export const EntryScreen: React.FC = () => {
           const remainingPlayers = players.filter(p => p.id !== deletedPlayer.id);
           setPlayers(remainingPlayers);
           
-          // End game if not enough players
+          // End game if not enough players (skip if game was already deleted by host)
           if (remainingPlayers.length < 2) {
-            alert('Not enough players to continue. Game ending.');
+            if (!gameDeleted.current) {
+              alert('Not enough players to continue. Game ending.');
+            }
             navigate('/');
             return;
           }
