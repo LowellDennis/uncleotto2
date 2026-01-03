@@ -241,7 +241,11 @@ export const WaitForVotesScreen: React.FC = () => {
   const handleLeaveGame = async () => {
     if (!currentPlayer) return;
     
-    if (confirm('Are you sure you want to leave this game?')) {
+    const message = players.length === 2
+      ? 'If you leave the game there will not be enough to continue. Are you sure?'
+      : 'Are you sure you want to leave this game?';
+
+    if (confirm(message)) {
       try {
         await gameService.removePlayer(currentPlayer.id);
         navigate('/');
