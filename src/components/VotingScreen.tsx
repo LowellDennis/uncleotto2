@@ -286,30 +286,34 @@ export const VotingScreen: React.FC = () => {
   };
   
   const loadVoteCounts = async () => {
-    if (!gameId || !game) return;
+    if (!gameId || !game || !currentPlayer) return;
     
     try {
       // Load all votes for this game and round
       const { data: votesData, error } = await supabase
         .from('votes')
-        .select('entry_id')
+        .select('entry_id, player_id')
         .eq('game_id', gameId)
         .eq('round', game.current_round);
       
       if (error) {
+        console.error('Error loading votes:', error);
         return;
       }
       
       // Count votes per entry (for displaying vote counts)
       const counts = new Map<string, number>();
+      const myVotes = new Set<string>();
+      
       votesData?.forEach(vote => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
+        if (vote.player_id === currentPlayer.id) {
+          myVotes.add(vote.entry_id);
+        }
       });
       
       setVoteCounts(counts);
-      
-      // Note: We don't reload votedEntries here - optimistic updates handle that
-      // and will revert on error. This prevents race conditions.
+      setVotedEntries(myVotes);
     } catch (err) {
       console.error('Error loading vote counts:', err);
     }
@@ -369,113 +373,59 @@ export const VotingScreen: React.FC = () => {
 
     try {
       const isVoted = votedEntries.has(entry.id);
-      
-      // Optimistically update UI first to prevent double-clicks
-      if (isVoted) {
-        const newVotedEntries = new Set(votedEntries);
-        newVotedEntries.delete(entry.id);
-        setVotedEntries(newVotedEntries);
-      } else {
-        const newVotedEntries = new Set(votedEntries);
-        newVotedEntries.add(entry.id);
-        setVotedEntries(newVotedEntries);
-      }
+      const player = players.find(p => p.id === entry.player_id);
+      if (!player) return;
       
       if (isVoted) {
-        // Remove vote - decrement score and delete from votes table
-        const player = players.find(p => p.id === entry.player_id);
-        if (player) {
-          const newScore = Math.max(0, player.score - 1);
-          const { error } = await supabase
+        // Remove vote
+        const newScore = Math.max(0, player.score - 1);
+        
+        // Update score and delete vote in parallel
+        const [scoreResult, voteResult] = await Promise.all([
+          supabase
             .from('players')
             .update({ score: newScore })
-            .eq('id', entry.player_id);
-          
-          if (error) {
-            console.error('Error updating score:', error);
-            // Revert UI on error
-            const revertVotedEntries = new Set(votedEntries);
-            revertVotedEntries.add(entry.id);
-            setVotedEntries(revertVotedEntries);
-            return;
-          }
-          
-          // Delete vote record - wait for completion
-          const { error: deleteError } = await supabase
+            .eq('id', entry.player_id),
+          supabase
             .from('votes')
             .delete()
             .eq('game_id', gameId!)
             .eq('player_id', currentPlayer.id)
             .eq('entry_id', entry.id)
-            .eq('round', game.current_round);
-          
-          if (deleteError) {
-            console.error('Error deleting vote:', deleteError);
-            // Revert UI on error
-            const revertVotedEntries = new Set(votedEntries);
-            revertVotedEntries.add(entry.id);
-            setVotedEntries(revertVotedEntries);
-            return;
-          }
-          
-          // Update local state immediately
-          setPlayers(prev => prev.map(p => 
-            p.id === entry.player_id ? { ...p, score: newScore } : p
-          ));
-        }
+            .eq('round', game.current_round)
+        ]);
+        
+        if (scoreResult.error) console.error('Error updating score:', scoreResult.error);
+        if (voteResult.error) console.error('Error deleting vote:', voteResult.error);
+        
       } else {
-        // Add vote - increment score and insert into votes table
-        const player = players.find(p => p.id === entry.player_id);
-        if (player) {
-          const newScore = player.score + 1;
-          
-          // Update database
-          const { error } = await supabase
+        // Add vote
+        const newScore = player.score + 1;
+        
+        // Update score and insert vote in parallel
+        const [scoreResult, voteResult] = await Promise.all([
+          supabase
             .from('players')
             .update({ score: newScore })
-            .eq('id', entry.player_id);
-          
-          if (error) {
-            console.error('Error updating score:', error);
-            // Revert UI on error
-            const revertVotedEntries = new Set(votedEntries);
-            revertVotedEntries.delete(entry.id);
-            setVotedEntries(revertVotedEntries);
-            return;
-          }
-          
-          // Insert vote record - check for errors
-          const { error: insertError } = await supabase
+            .eq('id', entry.player_id),
+          supabase
             .from('votes')
             .insert({
               game_id: gameId!,
               player_id: currentPlayer.id,
               entry_id: entry.id,
               round: game.current_round
-            });
-          
-          if (insertError) {
-            console.error('Error inserting vote:', insertError);
-            // Revert UI on error (e.g., duplicate vote conflict)
-            const revertVotedEntries = new Set(votedEntries);
-            revertVotedEntries.delete(entry.id);
-            setVotedEntries(revertVotedEntries);
-            return;
-          }
-          
-          // Update local state immediately
-          setPlayers(prev => prev.map(p => 
-            p.id === entry.player_id ? { ...p, score: newScore } : p
-          ));
-        }
+            })
+        ]);
+        
+        if (scoreResult.error) console.error('Error updating score:', scoreResult.error);
+        if (voteResult.error) console.error('Error inserting vote:', voteResult.error);
       }
       
-      // Note: loadVoteCounts will be called by the real-time subscription
-      // when the vote changes are detected in the database
+      // Real-time subscriptions will update the UI automatically
     } catch (err) {
       console.error('Error in handleWordClick:', err);
     } finally {
-      // Always remove from processing set
       processingEntries.current.delete(entry.id);
     }
   };
