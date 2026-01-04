@@ -38,6 +38,7 @@ export const VotingScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDoneVoting, setIsDoneVoting] = useState(false);
   const [voteCounts, setVoteCounts] = useState<Map<string, number>>(new Map());
+  const [playersReady, setPlayersReady] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
 
@@ -97,13 +98,19 @@ export const VotingScreen: React.FC = () => {
               p.id === updatedPlayer.id ? updatedPlayer : p
             );
             
+            // Update playersReady set for checkmarks
+            setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
+            
             // Check if all players are ready
             const allReady = updated.every(p => p.ready);
             if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
+              // Find current user in updated array to get fresh host status
+              const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+              
               // If this is the host, increment the round
-              if (currentPlayer?.is_host && game) {
+              if (currentUserPlayer?.is_host && game) {
                 supabase
                   .from('games')
                   .update({ current_round: game.current_round + 1 })
@@ -207,6 +214,9 @@ export const VotingScreen: React.FC = () => {
       setPlayers(playersData || []);
       const player = (playersData || []).find(p => p.user_id === user?.id) || null;
       setCurrentPlayer(player);
+      
+      // Initialize playersReady set for checkmarks
+      setPlayersReady(new Set((playersData || []).filter(p => p.ready).map(p => p.id)));
 
       // Load current player's votes
       if (player) {
@@ -543,6 +553,12 @@ export const VotingScreen: React.FC = () => {
           onKickPlayer={handleKickPlayer}
         />
 
+        {isDoneVoting && (
+          <div className="waiting-message">
+            Waiting for other players to finish voting...
+          </div>
+        )}
+
         <div className="sentences-container">
           <div className="voting-instructions">
             {isDoneVoting 
@@ -578,6 +594,12 @@ export const VotingScreen: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {isDoneVoting && (
+          <div className="waiting-message">
+            Waiting for other players to finish voting...
+          </div>
+        )}
 
         <div className="voting-actions">
           {!isDoneVoting && (
