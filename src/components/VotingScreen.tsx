@@ -315,6 +315,10 @@ export const VotingScreen: React.FC = () => {
         }
       });
       
+      console.log('loadVoteCounts - Total votes:', votesData?.length);
+      console.log('loadVoteCounts - My votes:', myVotes.size, Array.from(myVotes));
+      console.log('loadVoteCounts - Current player ID:', currentPlayerInList?.id);
+      
       setVoteCounts(counts);
       setVotedEntries(myVotes);
     } catch (err) {
