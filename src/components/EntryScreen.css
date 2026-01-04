@@ -28,6 +28,18 @@
   box-sizing: border-box;
 }
 
+.waiting-message {
+  font-family: 'Chewy', cursive;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: #667eea;
+  text-align: center;
+  padding: 4px 8px;
+  background: white;
+  border-radius: 0;
+  margin: 0 0 12px 0;
+}
+
 .entry-actions {
   width: 100%;
   margin: 6px 0 0 0;

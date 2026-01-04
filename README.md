@@ -134,7 +134,6 @@
 4. **UI Display Rules**
    - LobbyScreen: Shows lifetime scores with message "Scores shown are lifetime scores"
    - EntryScreen: Shows game scores (accumulated across rounds)
-   - WaitForEntriesScreen: Shows game scores
    - VotingScreen: Shows game scores (real-time updates) and vote counts on entries after "Done Voting"
 
 5. **Database Migrations**
@@ -158,15 +157,13 @@
    **A. Entry Phase**
    - All players enter their 6 word substitutions
    - Game scores displayed (reset to 0 at start of each voting round)
-   - Players click "Submit Entries" → navigate to Waiting Screen
+   - Players click "Submit Entries" → button disappears, fields disabled
+   - Message appears: "Waiting for other players to submit their entries..."
+   - Entries remain visible
    - Checkmarks appear next to players who have submitted
+   - When all players submit → all auto-navigate to Voting Screen
    
-   **B. Wait for Entries Phase**
-   - Players wait for all to submit entries
-   - Game scores displayed
-   - When last player submits → all auto-navigate to Voting Screen
-   
-   **C. Voting Phase**
+   **B. Voting Phase**
    - **Score Accumulation:** Scores persist across rounds (accumulate from previous voting rounds)
    - Generated sentences displayed with colored word contributions
    - Players click words to vote for them
@@ -223,7 +220,7 @@
 **CRITICAL: Hosts can kick players from any screen to manage disruptive behavior**
 
 1. **Kick Button Availability**
-   - Enabled on ALL screens: LobbyScreen, EntryScreen, WaitForEntriesScreen, VotingScreen
+   - Enabled on ALL screens: LobbyScreen, EntryScreen, VotingScreen
    - Only visible when `currentPlayer.is_host === true`
    - Players cannot kick themselves or other hosts
    - Click on any other player's badge to kick them
@@ -324,10 +321,11 @@
    - Sentences: centered with text-align: center
    - Real-time score updates use Supabase Realtime (no polling)
 
-3. **Auto-Transition Fix**
-   - WaitForEntriesScreen: Fixed real-time entry detection
-   - When last player submits, all waiting players auto-navigate to VotingScreen
-   - Uses INSERT event on entries table to trigger checkPlayerEntries()
+3. **Auto-Transition Implementation**
+   - Players remain on Entry/Voting screens after submission
+   - Ready state tracked in players.ready field
+   - Auto-navigate when all players ready using real-time subscriptions
+   - Uses INSERT event on entries table for real-time coordination
    - Properly handles players array in state updates for DELETE events
 
 4. **Typography Standards**
@@ -632,7 +630,7 @@
 - **Automatic Game Flow:**
   - When all players are marked ready (all have checkmarks), the host automatically increments the game round.
   - All players are then navigated to the "Entry Screen" to start the next round.
-  - This creates an infinite loop: Entry → Waiting → Voting → Entry (repeat).
+   - This creates an infinite loop: Entry → Voting → Entry (repeat).
 - **Game Termination Conditions:**
   - The host clicks the "End Game" button (see above).
   - If fewer than 2 players remain (due to disconnections or players leaving).

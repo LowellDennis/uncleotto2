@@ -32,7 +32,10 @@ export const EntryScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [playersReady, setPlayersReady] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
+  const hasNavigated = useRef(false);
   
   // Initialize entries from localStorage if available
   const [entries, setEntries] = useState<EntryInputs>(() => {
@@ -130,9 +133,37 @@ export const EntryScreen: React.FC = () => {
           table: 'players',
           filter: `game_id=eq.${gameId}`
         },
-        (payload) => {
+        async (payload) => {
           const updatedPlayer = payload.new as Player;
-          setPlayers(prev => prev.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
+          setPlayers(prev => {
+            const updated = prev.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
+            
+            // Update playersReady set for checkmarks
+            setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
+            
+            // Check if all players are ready (submitted entries)
+            const allReady = updated.every(p => p.ready);
+            if (allReady && !hasNavigated.current && game) {
+              hasNavigated.current = true;
+              
+              // If this is the host, reset ready states and navigate everyone to voting
+              if (currentPlayer?.is_host) {
+                // Reset all players' ready state
+                updated.forEach(p => {
+                  supabase
+                    .from('players')
+                    .update({ ready: false })
+                    .eq('id', p.id);
+                });
+              }
+              
+              // All players navigate to voting screen
+              navigate(`/game/${gameId}/voting`);
+            }
+            
+            return updated;
+          });
+          
           if (updatedPlayer.user_id === user?.id) {
             setCurrentPlayer(updatedPlayer);
           }
@@ -204,6 +235,9 @@ export const EntryScreen: React.FC = () => {
       setPlayers(playersData || []);
       const player = playersData?.find(p => p.user_id === user?.id) || null;
       setCurrentPlayer(player);
+      
+      // Initialize playersReady set for checkmarks
+      setPlayersReady(new Set((playersData || []).filter(p => p.ready).map(p => p.id)));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load game data');
     } finally {
@@ -257,15 +291,23 @@ export const EntryScreen: React.FC = () => {
 
         if (insertError) throw insertError;
       }
+      
+      // Mark player as ready
+      const { error: readyError } = await supabase
+        .from('players')
+        .update({ ready: true })
+        .eq('id', currentPlayer.id);
+      
+      if (readyError) throw readyError;
 
       // Clear localStorage after successful submission
       if (gameId && user?.id) {
         const storageKey = `entries-${gameId}-${user?.id}`;
         localStorage.removeItem(storageKey);
       }
-
-      // Navigate to waiting screen
-      navigate(`/game/${gameId}/waiting`);
+      
+      // Update local state
+      setIsSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit entries');
     } finally {
@@ -367,11 +409,18 @@ export const EntryScreen: React.FC = () => {
           currentUserId={user?.id}
           showKickButton={currentPlayer?.is_host || false}
           onKickPlayer={handleKickPlayer}
+          playersReady={playersReady}
         />
 
         <div className="round-indicator">Round {game.current_round}</div>
 
         <div className="entry-form">
+          {isSubmitted && (
+            <div className="waiting-message">
+              Waiting for other players to submit their entries...
+            </div>
+          )}
+          
           <EntryField
             id="title"
             label="Uncle"
@@ -379,6 +428,7 @@ export const EntryScreen: React.FC = () => {
             placeholder="A title"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('title', value)}
+            disabled={isSubmitted}
           />
           
           <EntryField
@@ -388,6 +438,7 @@ export const EntryScreen: React.FC = () => {
             placeholder="A name"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('name', value)}
+            disabled={isSubmitted}
           />
           
           <EntryField
@@ -397,6 +448,7 @@ export const EntryScreen: React.FC = () => {
             placeholder="An active verb"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('verb', value)}
+            disabled={isSubmitted}
           />
           
           <EntryField
@@ -406,6 +458,7 @@ export const EntryScreen: React.FC = () => {
             placeholder="An adverb"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('adverb', value)}
+            disabled={isSubmitted}
           />
           
           <EntryField
@@ -415,6 +468,7 @@ export const EntryScreen: React.FC = () => {
             placeholder="A preposition"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('preposition', value)}
+            disabled={isSubmitted}
           />
           
           <EntryField
@@ -424,17 +478,20 @@ export const EntryScreen: React.FC = () => {
             placeholder="A noun"
             maxChars={MAX_CHARS}
             onChange={(value) => handleInputChange('noun', value)}
+            disabled={isSubmitted}
           />
         </div>
 
         <div className="entry-actions">
-          <button
-            onClick={handleSubmit}
-            disabled={!allFieldsFilled() || submitting}
-            className="submit-button"
-          >
-            {submitting ? 'Submitting...' : 'Submit Entries'}
-          </button>
+          {!isSubmitted && (
+            <button
+              onClick={handleSubmit}
+              disabled={!allFieldsFilled() || submitting}
+              className="submit-button"
+            >
+              {submitting ? 'Submitting...' : 'Submit Entries'}
+            </button>
+          )}
         </div>
       </div>
 

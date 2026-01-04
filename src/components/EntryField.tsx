@@ -8,6 +8,7 @@ interface EntryFieldProps {
   placeholder: string;
   maxChars: number;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 export const EntryField: React.FC<EntryFieldProps> = ({
@@ -16,7 +17,8 @@ export const EntryField: React.FC<EntryFieldProps> = ({
   value,
   placeholder,
   maxChars,
-  onChange
+  onChange,
+  disabled = false
 }) => {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -42,6 +44,7 @@ export const EntryField: React.FC<EntryFieldProps> = ({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={1}
+            disabled={disabled}
           />
           <span className="char-counter">{value.length}/{maxChars}</span>
         </div>
