@@ -286,7 +286,7 @@ export const VotingScreen: React.FC = () => {
   };
   
   const loadVoteCounts = async () => {
-    if (!gameId || !game) return;
+    if (!gameId || !game || !currentPlayer) return;
     
     try {
       // Load all votes for this game and round
@@ -307,7 +307,20 @@ export const VotingScreen: React.FC = () => {
       });
       
       setVoteCounts(counts);
+      
+      // Also reload current player's voted entries to stay in sync
+      const { data: myVotesData } = await supabase
+        .from('votes')
+        .select('entry_id')
+        .eq('game_id', gameId)
+        .eq('player_id', currentPlayer.id)
+        .eq('round', game.current_round);
+      
+      if (myVotesData) {
+        setVotedEntries(new Set(myVotesData.map(v => v.entry_id)));
+      }
     } catch (err) {
+      console.error('Error loading vote counts:', err);
     }
   };
 
