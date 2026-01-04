@@ -157,7 +157,14 @@ export function GatheringScreen() {
   const handleCreateAccountSubmit = async (email: string, password: string, displayName: string, gameNameValue: string) => {
     setPlayerName(displayName)
     setGameName(gameNameValue)
-    return await signUp(email, password, displayName, gameNameValue)
+    const result = await signUp(email, password, displayName, gameNameValue)
+    
+    // Show email validation message if signup succeeded
+    if (!result.error) {
+      alert('Account created! Please check your email for a validation link to activate your account.');
+    }
+    
+    return result
   }
 
   const handleLogOut = async () => {

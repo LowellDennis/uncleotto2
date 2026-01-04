@@ -155,6 +155,19 @@ export const VotingScreen: React.FC = () => {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'votes',
+          filter: `game_id=eq.${gameId}`
+        },
+        () => {
+          // Reload vote counts when any vote changes
+          loadVoteCounts();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -417,7 +430,6 @@ export const VotingScreen: React.FC = () => {
     if (!currentPlayer || !game) return;
 
     try {
-      setLoading(true);
       setError(null);
 
       // Mark player as ready
@@ -432,8 +444,6 @@ export const VotingScreen: React.FC = () => {
       setIsDoneVoting(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to finish voting');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -560,7 +570,7 @@ export const VotingScreen: React.FC = () => {
                     title={`${entry.playerName}'s ${category}`}
                   >
                     {entry.text}
-                    {voteCount > 0 && isDoneVoting && <span className="vote-count"> ({voteCount})</span>}
+                    {voteCount > 0 && <span className="vote-count"> ({voteCount})</span>}
                     {isVoted && <span className="vote-check">✓</span>}
                   </span>
                 );

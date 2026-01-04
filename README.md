@@ -172,11 +172,11 @@
    - Players click words to vote for them
    - Players click again to unvote
    - Votes stored in votes table and increment player scores
+   - **Vote counts update in real-time** as all players vote (e.g., "word (3)" shows 3 votes)
    - Scores update in real-time across all browsers (Supabase Realtime)
    - Players click "Done Voting" → button hidden, entries become non-clickable
    - Waiting message appears: "Waiting for other players to finish voting..."
-   - Vote counts displayed on entries: "word (3)" when 3 players voted for it
-   - Vote counts only visible after clicking "Done Voting"
+   - Sentences remain visible with vote counts continuing to update in real-time
    - When all players ready → host increments game.current_round
    - All players auto-navigate back to Entry Screen
    - **Loop repeats indefinitely** (Entry → Wait for Entries → Voting → Entry...)
