@@ -146,8 +146,9 @@ export const EntryScreen: React.FC = () => {
             if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
-              // If this is the host, reset ready states
-              if (updatedPlayer.user_id === user?.id && currentPlayer?.is_host) {
+              // Check if current user is the host
+              const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+              if (currentUserPlayer?.is_host) {
                 // Reset all players' ready state
                 updated.forEach(p => {
                   supabase
