@@ -361,6 +361,17 @@ export const VotingScreen: React.FC = () => {
     try {
       const isVoted = votedEntries.has(entry.id);
       
+      // Optimistically update UI first to prevent double-clicks
+      if (isVoted) {
+        const newVotedEntries = new Set(votedEntries);
+        newVotedEntries.delete(entry.id);
+        setVotedEntries(newVotedEntries);
+      } else {
+        const newVotedEntries = new Set(votedEntries);
+        newVotedEntries.add(entry.id);
+        setVotedEntries(newVotedEntries);
+      }
+      
       if (isVoted) {
         // Remove vote - decrement score and delete from votes table
         const player = players.find(p => p.id === entry.player_id);
@@ -385,6 +396,11 @@ export const VotingScreen: React.FC = () => {
             .eq('round', game.current_round);
           
           if (deleteError) {
+            console.error('Error deleting vote:', deleteError);
+            // Revert UI on error
+            const revertVotedEntries = new Set(votedEntries);
+            revertVotedEntries.add(entry.id);
+            setVotedEntries(revertVotedEntries);
             return;
           }
           
@@ -393,10 +409,6 @@ export const VotingScreen: React.FC = () => {
             p.id === entry.player_id ? { ...p, score: newScore } : p
           ));
         }
-        
-        const newVotedEntries = new Set(votedEntries);
-        newVotedEntries.delete(entry.id);
-        setVotedEntries(newVotedEntries);
       } else {
         // Add vote - increment score and insert into votes table
         const player = players.find(p => p.id === entry.player_id);
@@ -413,8 +425,8 @@ export const VotingScreen: React.FC = () => {
             return;
           }
           
-          // Insert vote record
-          await supabase
+          // Insert vote record - check for errors
+          const { error: insertError } = await supabase
             .from('votes')
             .insert({
               game_id: gameId!,
@@ -423,15 +435,20 @@ export const VotingScreen: React.FC = () => {
               round: game.current_round
             });
           
+          if (insertError) {
+            console.error('Error inserting vote:', insertError);
+            // Revert UI on error (e.g., duplicate vote conflict)
+            const revertVotedEntries = new Set(votedEntries);
+            revertVotedEntries.delete(entry.id);
+            setVotedEntries(revertVotedEntries);
+            return;
+          }
+          
           // Update local state immediately
           setPlayers(prev => prev.map(p => 
             p.id === entry.player_id ? { ...p, score: newScore } : p
           ));
         }
-        
-        const newVotedEntries = new Set(votedEntries);
-        newVotedEntries.add(entry.id);
-        setVotedEntries(newVotedEntries);
       }
       
       // Recalculate vote counts
