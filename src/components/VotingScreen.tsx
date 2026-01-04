@@ -289,6 +289,16 @@ export const VotingScreen: React.FC = () => {
     if (!gameId || !game || !user?.id) return;
     
     try {
+      // Get current player ID
+      const { data: playerData } = await supabase
+        .from('players')
+        .select('id')
+        .eq('game_id', gameId)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!playerData) return;
+      
       // Load all votes for this game and round
       const { data: votesData, error } = await supabase
         .from('votes')
@@ -301,23 +311,16 @@ export const VotingScreen: React.FC = () => {
         return;
       }
       
-      // Count votes per entry (for displaying vote counts)
+      // Count votes per entry and find my votes
       const counts = new Map<string, number>();
       const myVotes = new Set<string>();
       
-      // Find current player ID from players array using user.id
-      const currentPlayerInList = players.find(p => p.user_id === user.id);
-      
       votesData?.forEach(vote => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
-        if (currentPlayerInList && vote.player_id === currentPlayerInList.id) {
+        if (vote.player_id === playerData.id) {
           myVotes.add(vote.entry_id);
         }
       });
-      
-      console.log('loadVoteCounts - Total votes:', votesData?.length);
-      console.log('loadVoteCounts - My votes:', myVotes.size, Array.from(myVotes));
-      console.log('loadVoteCounts - Current player ID:', currentPlayerInList?.id);
       
       setVoteCounts(counts);
       setVotedEntries(myVotes);
