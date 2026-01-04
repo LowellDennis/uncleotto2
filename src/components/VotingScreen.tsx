@@ -286,7 +286,7 @@ export const VotingScreen: React.FC = () => {
   };
   
   const loadVoteCounts = async () => {
-    if (!gameId || !game || !currentPlayer) return;
+    if (!gameId || !game || !user?.id) return;
     
     try {
       // Load all votes for this game and round
@@ -305,9 +305,12 @@ export const VotingScreen: React.FC = () => {
       const counts = new Map<string, number>();
       const myVotes = new Set<string>();
       
+      // Find current player ID from players array using user.id
+      const currentPlayerInList = players.find(p => p.user_id === user.id);
+      
       votesData?.forEach(vote => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
-        if (vote.player_id === currentPlayer.id) {
+        if (currentPlayerInList && vote.player_id === currentPlayerInList.id) {
           myVotes.add(vote.entry_id);
         }
       });
