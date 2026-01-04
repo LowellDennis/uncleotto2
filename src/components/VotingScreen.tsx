@@ -286,7 +286,7 @@ export const VotingScreen: React.FC = () => {
   };
   
   const loadVoteCounts = async () => {
-    if (!gameId || !game || !currentPlayer) return;
+    if (!gameId || !game) return;
     
     try {
       // Load all votes for this game and round
@@ -300,7 +300,7 @@ export const VotingScreen: React.FC = () => {
         return;
       }
       
-      // Count votes per entry
+      // Count votes per entry (for displaying vote counts)
       const counts = new Map<string, number>();
       votesData?.forEach(vote => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
@@ -308,17 +308,8 @@ export const VotingScreen: React.FC = () => {
       
       setVoteCounts(counts);
       
-      // Also reload current player's voted entries to stay in sync
-      const { data: myVotesData } = await supabase
-        .from('votes')
-        .select('entry_id')
-        .eq('game_id', gameId)
-        .eq('player_id', currentPlayer.id)
-        .eq('round', game.current_round);
-      
-      if (myVotesData) {
-        setVotedEntries(new Set(myVotesData.map(v => v.entry_id)));
-      }
+      // Note: We don't reload votedEntries here - optimistic updates handle that
+      // and will revert on error. This prevents race conditions.
     } catch (err) {
       console.error('Error loading vote counts:', err);
     }
