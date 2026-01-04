@@ -106,8 +106,11 @@ export const VotingScreen: React.FC = () => {
             if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
+              // Find current user in updated array to get fresh host status
+              const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+              
               // If this is the host, increment the round
-              if (currentPlayer?.is_host && game) {
+              if (currentUserPlayer?.is_host && game) {
                 supabase
                   .from('games')
                   .update({ current_round: game.current_round + 1 })
