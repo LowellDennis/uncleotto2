@@ -416,12 +416,6 @@ export const EntryScreen: React.FC = () => {
         <div className="round-indicator">Round {game.current_round}</div>
 
         <div className="entry-form">
-          {isSubmitted && (
-            <div className="waiting-message">
-              Waiting for other players to submit their entries...
-            </div>
-          )}
-          
           <EntryField
             id="title"
             label="Uncle"
@@ -494,6 +488,12 @@ export const EntryScreen: React.FC = () => {
             </button>
           )}
         </div>
+
+        {isSubmitted && (
+          <div className="waiting-message">
+            Waiting for other players to submit their entries...
+          </div>
+        )}
       </div>
 
       <Footer />

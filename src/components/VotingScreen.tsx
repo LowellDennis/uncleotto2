@@ -372,14 +372,18 @@ export const VotingScreen: React.FC = () => {
             return;
           }
           
-          // Delete vote record
-          await supabase
+          // Delete vote record - wait for completion
+          const { error: deleteError } = await supabase
             .from('votes')
             .delete()
             .eq('game_id', gameId!)
             .eq('player_id', currentPlayer.id)
             .eq('entry_id', entry.id)
             .eq('round', game.current_round);
+          
+          if (deleteError) {
+            return;
+          }
           
           // Update local state immediately
           setPlayers(prev => prev.map(p => 
@@ -551,12 +555,15 @@ export const VotingScreen: React.FC = () => {
           playersReady={playersReady}
         />
 
+        {isDoneVoting && (
+          <div className="waiting-message">
+            Waiting for other players to finish voting...
+          </div>
+        )}
+
         <div className="sentences-container">
           <div className="voting-instructions">
-            {isDoneVoting 
-              ? 'Waiting for other players to finish voting...'
-              : 'Click on entries you like (except you own) to vote for them!'
-            }
+            Click on entries you like (except you own) to vote for them!
           </div>
           
           {sentences.map((sentence) => (
@@ -586,6 +593,12 @@ export const VotingScreen: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {isDoneVoting && (
+          <div className="waiting-message">
+            Waiting for other players to finish voting...
+          </div>
+        )}
 
         <div className="voting-actions">
           {!isDoneVoting && (
