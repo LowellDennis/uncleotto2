@@ -93,26 +93,18 @@
    - Immediate local state update + database write for optimal UX
    - DELETE event handler to check for minimum player count (< 2 terminates game)
 
-5. **Score Reset Pattern**
-   - VotingScreen resets all player scores to 0 on component mount
-   - Prevents score accumulation bugs across rounds
-   - Pattern:
-     ```typescript
-     await Promise.all(
-       players.map(p => supabase.from('players').update({ score: 0 }).eq('id', p.id))
-     );
-     ```
-
 ### Database Schema
 - See `/database/schema.sql` for complete schema
 - Tables: games, players, entries, votes, user_stats
 - **user_stats table:** Tracks lifetime_score and games_played per user
 - **players table:** Contains both score (game score) and lifetime_score (snapshot at join)
+- **votes table:** Tracks individual votes (game_id, player_id, entry_id, round)
 - Indexes on frequently queried fields (game_id, round, status)
 - Triggers for automatic timestamp updates
 - **RLS Policies:**
   - players: SELECT and UPDATE policies allow all authenticated users
   - user_stats: SELECT for all authenticated, ALL for own stats only
+  - votes: INSERT and DELETE for authenticated users
   - REPLICA IDENTITY FULL on players table for complete real-time updates
 
 ### Dual-Score System Architecture
@@ -126,25 +118,24 @@
    - Includes games_played counter for statistics
 
 2. **Game Scores (players.score column)**
-   - Score for the current game only
-   - Reset to 0 at the start of each voting round
+   - Score for the current game, accumulated across all voting rounds
+   - **Not reset between rounds** - votes accumulate throughout the entire game
    - Updated in real-time as players vote/unvote
-   - Displayed during all gameplay screens (Entry, Waiting, Voting, Results)
+   - Displayed during all gameplay screens (Entry, Waiting, Voting)
    - Saved to lifetime totals when game ends
 
 3. **Implementation Flow**
    - When player creates/joins game: gameService.getUserStats() loads their lifetime score
    - During voting: players.score increments/decrements with each vote/unvote
-   - Between rounds: VotingScreen resets all players.score to 0
+   - Between rounds: Scores persist (no reset)
    - When game ends: gameService.deleteGame() adds each player's game score to their lifetime total
    - Next game: Player's lifetime score reflects cumulative progress
 
 4. **UI Display Rules**
    - LobbyScreen: Shows lifetime scores with message "Scores shown are lifetime scores"
-   - EntryScreen: Shows game scores (reset to 0 each round)
+   - EntryScreen: Shows game scores (accumulated across rounds)
    - WaitForEntriesScreen: Shows game scores
-   - VotingScreen: Shows game scores (real-time updates)
-   - WaitForVotesScreen: Shows game scores from completed round
+   - VotingScreen: Shows game scores (real-time updates) and vote counts on entries after "Done Voting"
 
 5. **Database Migrations**
    - Migration file: `/supabase/migrations/add_user_stats.sql`
@@ -176,20 +167,19 @@
    - When last player submits → all auto-navigate to Voting Screen
    
    **C. Voting Phase**
-   - Scores reset to 0 when screen loads
+   - **Score Accumulation:** Scores persist across rounds (accumulate from previous voting rounds)
    - Generated sentences displayed with colored word contributions
-   - Players click words to vote (+1 to that player's score)
-   - Players click again to unvote (-1 to that player's score)
+   - Players click words to vote for them
+   - Players click again to unvote
+   - Votes stored in votes table and increment player scores
    - Scores update in real-time across all browsers (Supabase Realtime)
-   - Players click "Done Voting" → navigate to Wait for Votes Screen
-   - Checkmarks appear next to players who are done
-   
-   **D. Wait for Votes Phase**
-   - Players see final scores from the completed round
-   - All players automatically marked as ready
-   - When all ready → host increments game.current_round
+   - Players click "Done Voting" → button hidden, entries become non-clickable
+   - Waiting message appears: "Waiting for other players to finish voting..."
+   - Vote counts displayed on entries: "word (3)" when 3 players voted for it
+   - Vote counts only visible after clicking "Done Voting"
+   - When all players ready → host increments game.current_round
    - All players auto-navigate back to Entry Screen
-   - **Loop repeats indefinitely** (Entry → Wait for Entries → Voting → Wait for Votes → Entry...)
+   - **Loop repeats indefinitely** (Entry → Wait for Entries → Voting → Entry...)
 
 3. **Game Termination**
    - **Host Action:** Host clicks "End Game" button (available on all screens)
@@ -223,15 +213,17 @@
 
 5. **Critical Flow Rules**
    - Lobby Screen shown ONLY at game creation/join (not between rounds)
-   - Scores reset to 0 at start of each voting round (not cumulative within game)
+   - **Scores accumulate across rounds within a game** (voting increments scores, not reset between rounds)
    - Game scores saved to lifetime totals only when game ends (not after each round)
    - Automatic navigation requires coordination: host performs DB updates, all clients listen for changes
+   - Vote counts displayed only after player clicks "Done Voting"
+   - Players remain on Voting Screen after clicking "Done Voting" (no separate waiting screen)
 
 ### Host Kick Functionality
 **CRITICAL: Hosts can kick players from any screen to manage disruptive behavior**
 
 1. **Kick Button Availability**
-   - Enabled on ALL screens: LobbyScreen, EntryScreen, WaitForEntriesScreen, VotingScreen, WaitForVotesScreen
+   - Enabled on ALL screens: LobbyScreen, EntryScreen, WaitForEntriesScreen, VotingScreen
    - Only visible when `currentPlayer.is_host === true`
    - Players cannot kick themselves or other hosts
    - Click on any other player's badge to kick them

@@ -5,7 +5,6 @@ import { LobbyScreen } from './components/LobbyScreen'
 import { EntryScreen } from './components/EntryScreen'
 import { WaitForEntriesScreen } from './components/WaitForEntriesScreen'
 import { VotingScreen } from './components/VotingScreen'
-import { WaitForVotesScreen } from './components/WaitForVotesScreen'
 import './App.css'
 
 function App() {
@@ -18,7 +17,6 @@ function App() {
           <Route path="/game/:gameId/entry" element={<EntryScreen />} />
           <Route path="/game/:gameId/waiting" element={<WaitForEntriesScreen />} />
           <Route path="/game/:gameId/voting" element={<VotingScreen />} />
-          <Route path="/game/:gameId/results-waiting" element={<WaitForVotesScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

@@ -104,6 +104,13 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
+.vote-count {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: rgba(0, 0, 0, 0.6);
+  margin-left: 2px;
+}
+
 .voting-actions {
   margin-top: 12px;
   margin-bottom: 12px;
