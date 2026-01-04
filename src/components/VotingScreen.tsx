@@ -41,6 +41,7 @@ export const VotingScreen: React.FC = () => {
   const [playersReady, setPlayersReady] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
+  const processingEntries = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!gameId) {
@@ -357,6 +358,10 @@ export const VotingScreen: React.FC = () => {
     
     // Can't vote if done voting
     if (isDoneVoting) return;
+    
+    // Prevent concurrent operations on the same entry
+    if (processingEntries.current.has(entry.id)) return;
+    processingEntries.current.add(entry.id);
 
     try {
       const isVoted = votedEntries.has(entry.id);
@@ -464,6 +469,10 @@ export const VotingScreen: React.FC = () => {
       // Recalculate vote counts
       await loadVoteCounts();
     } catch (err) {
+      console.error('Error in handleWordClick:', err);
+    } finally {
+      // Always remove from processing set
+      processingEntries.current.delete(entry.id);
     }
   };
 
