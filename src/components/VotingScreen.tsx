@@ -38,10 +38,8 @@ export const VotingScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDoneVoting, setIsDoneVoting] = useState(false);
   const [voteCounts, setVoteCounts] = useState<Map<string, number>>(new Map());
-  const [playersReady, setPlayersReady] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
-  const processingEntries = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!gameId) {
@@ -99,19 +97,13 @@ export const VotingScreen: React.FC = () => {
               p.id === updatedPlayer.id ? updatedPlayer : p
             );
             
-            // Update playersReady set for checkmarks
-            setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
-            
             // Check if all players are ready
             const allReady = updated.every(p => p.ready);
             if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
-              // Find current user in updated array to get fresh host status
-              const currentUserPlayer = updated.find(p => p.user_id === user?.id);
-              
               // If this is the host, increment the round
-              if (currentUserPlayer?.is_host && game) {
+              if (currentPlayer?.is_host && game) {
                 supabase
                   .from('games')
                   .update({ current_round: game.current_round + 1 })
@@ -215,9 +207,6 @@ export const VotingScreen: React.FC = () => {
       setPlayers(playersData || []);
       const player = (playersData || []).find(p => p.user_id === user?.id) || null;
       setCurrentPlayer(player);
-      
-      // Initialize playersReady set for checkmarks
-      setPlayersReady(new Set((playersData || []).filter(p => p.ready).map(p => p.id)));
 
       // Load current player's votes
       if (player) {
@@ -286,46 +275,28 @@ export const VotingScreen: React.FC = () => {
   };
   
   const loadVoteCounts = async () => {
-    if (!gameId || !game || !user?.id) return;
+    if (!gameId || !game) return;
     
     try {
-      // Get current player ID
-      const { data: playerData } = await supabase
-        .from('players')
-        .select('id')
-        .eq('game_id', gameId)
-        .eq('user_id', user.id)
-        .single();
-      
-      if (!playerData) return;
-      
       // Load all votes for this game and round
       const { data: votesData, error } = await supabase
         .from('votes')
-        .select('entry_id, player_id')
+        .select('entry_id')
         .eq('game_id', gameId)
         .eq('round', game.current_round);
       
       if (error) {
-        console.error('Error loading votes:', error);
         return;
       }
       
-      // Count votes per entry and find my votes
+      // Count votes per entry
       const counts = new Map<string, number>();
-      const myVotes = new Set<string>();
-      
       votesData?.forEach(vote => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
-        if (vote.player_id === playerData.id) {
-          myVotes.add(vote.entry_id);
-        }
       });
       
       setVoteCounts(counts);
-      setVotedEntries(myVotes);
     } catch (err) {
-      console.error('Error loading vote counts:', err);
     }
   };
 
@@ -376,67 +347,82 @@ export const VotingScreen: React.FC = () => {
     
     // Can't vote if done voting
     if (isDoneVoting) return;
-    
-    // Prevent concurrent operations on the same entry
-    if (processingEntries.current.has(entry.id)) return;
-    processingEntries.current.add(entry.id);
 
     try {
       const isVoted = votedEntries.has(entry.id);
-      const player = players.find(p => p.id === entry.player_id);
-      if (!player) return;
       
       if (isVoted) {
-        // Remove vote
-        const newScore = Math.max(0, player.score - 1);
-        
-        // Update score and delete vote in parallel
-        const [scoreResult, voteResult] = await Promise.all([
-          supabase
+        // Remove vote - decrement score and delete from votes table
+        const player = players.find(p => p.id === entry.player_id);
+        if (player) {
+          const newScore = Math.max(0, player.score - 1);
+          const { error } = await supabase
             .from('players')
             .update({ score: newScore })
-            .eq('id', entry.player_id),
-          supabase
+            .eq('id', entry.player_id);
+          
+          if (error) {
+            return;
+          }
+          
+          // Delete vote record
+          await supabase
             .from('votes')
             .delete()
             .eq('game_id', gameId!)
             .eq('player_id', currentPlayer.id)
             .eq('entry_id', entry.id)
-            .eq('round', game.current_round)
-        ]);
+            .eq('round', game.current_round);
+          
+          // Update local state immediately
+          setPlayers(prev => prev.map(p => 
+            p.id === entry.player_id ? { ...p, score: newScore } : p
+          ));
+        }
         
-        if (scoreResult.error) console.error('Error updating score:', scoreResult.error);
-        if (voteResult.error) console.error('Error deleting vote:', voteResult.error);
-        
+        const newVotedEntries = new Set(votedEntries);
+        newVotedEntries.delete(entry.id);
+        setVotedEntries(newVotedEntries);
       } else {
-        // Add vote
-        const newScore = player.score + 1;
-        
-        // Update score and insert vote in parallel
-        const [scoreResult, voteResult] = await Promise.all([
-          supabase
+        // Add vote - increment score and insert into votes table
+        const player = players.find(p => p.id === entry.player_id);
+        if (player) {
+          const newScore = player.score + 1;
+          
+          // Update database
+          const { error } = await supabase
             .from('players')
             .update({ score: newScore })
-            .eq('id', entry.player_id),
-          supabase
+            .eq('id', entry.player_id);
+          
+          if (error) {
+            return;
+          }
+          
+          // Insert vote record
+          await supabase
             .from('votes')
             .insert({
               game_id: gameId!,
               player_id: currentPlayer.id,
               entry_id: entry.id,
               round: game.current_round
-            })
-        ]);
+            });
+          
+          // Update local state immediately
+          setPlayers(prev => prev.map(p => 
+            p.id === entry.player_id ? { ...p, score: newScore } : p
+          ));
+        }
         
-        if (scoreResult.error) console.error('Error updating score:', scoreResult.error);
-        if (voteResult.error) console.error('Error inserting vote:', voteResult.error);
+        const newVotedEntries = new Set(votedEntries);
+        newVotedEntries.add(entry.id);
+        setVotedEntries(newVotedEntries);
       }
       
-      // Real-time subscriptions will update the UI automatically
+      // Recalculate vote counts
+      await loadVoteCounts();
     } catch (err) {
-      console.error('Error in handleWordClick:', err);
-    } finally {
-      processingEntries.current.delete(entry.id);
     }
   };
 
@@ -555,18 +541,14 @@ export const VotingScreen: React.FC = () => {
           currentUserId={user?.id}
           showKickButton={currentPlayer?.is_host || false}
           onKickPlayer={handleKickPlayer}
-          playersReady={playersReady}
         />
-
-        {isDoneVoting && (
-          <div className="waiting-message">
-            Waiting for other players to finish voting...
-          </div>
-        )}
 
         <div className="sentences-container">
           <div className="voting-instructions">
-            Click on entries you like (except you own) to vote for them!
+            {isDoneVoting 
+              ? 'Waiting for other players to finish voting...'
+              : 'Click on entries you like (except you own) to vote for them!'
+            }
           </div>
           
           {sentences.map((sentence) => (
@@ -596,12 +578,6 @@ export const VotingScreen: React.FC = () => {
             </div>
           ))}
         </div>
-
-        {isDoneVoting && (
-          <div className="waiting-message">
-            Waiting for other players to finish voting...
-          </div>
-        )}
 
         <div className="voting-actions">
           {!isDoneVoting && (
