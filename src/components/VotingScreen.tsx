@@ -479,8 +479,8 @@ export const VotingScreen: React.FC = () => {
         }
       }
       
-      // Recalculate vote counts
-      await loadVoteCounts();
+      // Note: loadVoteCounts will be called by the real-time subscription
+      // when the vote changes are detected in the database
     } catch (err) {
       console.error('Error in handleWordClick:', err);
     } finally {
