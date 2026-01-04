@@ -383,6 +383,11 @@ export const VotingScreen: React.FC = () => {
             .eq('id', entry.player_id);
           
           if (error) {
+            console.error('Error updating score:', error);
+            // Revert UI on error
+            const revertVotedEntries = new Set(votedEntries);
+            revertVotedEntries.add(entry.id);
+            setVotedEntries(revertVotedEntries);
             return;
           }
           
@@ -422,6 +427,11 @@ export const VotingScreen: React.FC = () => {
             .eq('id', entry.player_id);
           
           if (error) {
+            console.error('Error updating score:', error);
+            // Revert UI on error
+            const revertVotedEntries = new Set(votedEntries);
+            revertVotedEntries.delete(entry.id);
+            setVotedEntries(revertVotedEntries);
             return;
           }
           
