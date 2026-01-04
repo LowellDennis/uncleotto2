@@ -311,10 +311,9 @@
    - Character counter below each textarea (not overlaying)
    - Single entry field per row, label above input
    
-   **Wait Screens (WaitForEntriesScreen, WaitForVotesScreen):**
+   **Wait Screen (WaitForEntriesScreen):**
    - Message font: 1rem (reduced from 1.2rem)
    - Padding: 12px vertical, 8px horizontal (reduced from 20px)
-   - Share same CSS file for consistency
    - Message fits on single line on mobile devices
    
    **Voting Screen:**
@@ -622,22 +621,18 @@
   - If they click again the checkmark disappears.
   - Checking adds +1 to that player's score.
   - Unchecking subtracts -1 from that player's score.
+- **Vote counts are displayed in real-time** on each entry (e.g., "word (3)" shows 3 votes).
 - After the resulting sentences, all players have a "Done Voting" button.
 - Pressing the "Done Voting" button:
   - Marks the player as ready (ready=true).
-  - Causes the clicking player to be taken to the "Wait for Votes Screen".
+  - Button disappears and entries become non-clickable.
+  - Message appears: "Waiting for other players to finish voting..."
+  - Sentences remain visible with vote counts continuing to update.
   - A checkmark appears beside their name in the player key.
-- The host has the "End Game" button (see above).
-- All other players have a "Leave Game" button (see above).
-
-### The Wait for Votes Screen
-- The game header is displayed (see above).
-- Under this is the player key (see above) **showing game scores from the just-completed voting round**.
-- Players are automatically marked as ready when they arrive at this screen.
 - **Automatic Game Flow:**
-  - When all players are marked ready, the host automatically increments the game round.
+  - When all players are marked ready (all have checkmarks), the host automatically increments the game round.
   - All players are then navigated to the "Entry Screen" to start the next round.
-  - This creates an infinite loop: Entry → Waiting → Voting → Results → Entry (repeat).
+  - This creates an infinite loop: Entry → Waiting → Voting → Entry (repeat).
 - **Game Termination Conditions:**
   - The host clicks the "End Game" button (see above).
   - If fewer than 2 players remain (due to disconnections or players leaving).
