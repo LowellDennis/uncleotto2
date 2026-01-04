@@ -143,11 +143,11 @@ export const EntryScreen: React.FC = () => {
             
             // Check if all players are ready (submitted entries)
             const allReady = updated.every(p => p.ready);
-            if (allReady && !hasNavigated.current && game) {
+            if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
-              // If this is the host, reset ready states and navigate everyone to voting
-              if (currentPlayer?.is_host) {
+              // If this is the host, reset ready states
+              if (updatedPlayer.user_id === user?.id && currentPlayer?.is_host) {
                 // Reset all players' ready state
                 updated.forEach(p => {
                   supabase
