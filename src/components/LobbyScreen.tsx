@@ -52,9 +52,13 @@ export const LobbyScreen: React.FC = () => {
               navigate(`/game/${gameId}/entry`);
             }
           } else if (payload.eventType === 'DELETE') {
-            // Game was ended by host
+            // Game was ended by host - save my stats before navigating
+            if (currentPlayer && user?.id) {
+              gameService.updateMyStats(user.id, currentPlayer.score || 0);
+            }
+            
             const hostPlayer = players.find(p => p.is_host);
-          const hostName = hostPlayer?.name || 'The host';
+            const hostName = hostPlayer?.name || 'The host';
             alert(`${hostName} has ended the game!`);
             navigate('/');
           }

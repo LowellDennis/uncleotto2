@@ -48,6 +48,26 @@ export const gameService = {
   },
 
   /**
+   * Update current user's lifetime stats after a game
+   */
+  async updateMyStats(userId: string, gameScore: number): Promise<void> {
+    try {
+      const stats = await this.getUserStats(userId);
+      
+      await supabase
+        .from('user_stats')
+        .upsert({
+          user_id: userId,
+          lifetime_score: stats.lifetime_score + gameScore,
+          games_played: stats.games_played + 1,
+          updated_at: new Date().toISOString()
+        });
+    } catch (error) {
+      console.error('Failed to update stats:', error);
+    }
+  },
+
+  /**
    * Create a new game
    */
   async createGame(gameName: string, playerName: string, userId: string): Promise<{ game: Game | null; player: Player | null; error: any }> {
@@ -295,48 +315,9 @@ export const gameService = {
     try {
       console.log('deleteGame called for:', gameId);
       
-      // Get all players with their scores before deleting
-      const { data: players, error: playersError } = await supabase
-        .from('players')
-        .select('user_id, score')
-        .eq('game_id', gameId);
-
-      if (playersError) {
-        console.error('Error fetching players:', playersError);
-        throw playersError;
-      }
-      
-      console.log('Found players:', players?.length);
-
-      // Update lifetime scores for all players
-      if (players && players.length > 0) {
-        for (const player of players) {
-          if (player.user_id) {
-            // Get current stats
-            const { data: stats } = await supabase
-              .from('user_stats')
-              .select('lifetime_score, games_played')
-              .eq('user_id', player.user_id)
-              .single();
-
-            const currentLifetime = stats?.lifetime_score || 0;
-            const currentGames = stats?.games_played || 0;
-
-            // Update or insert stats - increment games_played for all, add score if > 0
-            await supabase
-              .from('user_stats')
-              .upsert({
-                user_id: player.user_id,
-                lifetime_score: currentLifetime + (player.score || 0),
-                games_played: currentGames + 1,
-                updated_at: new Date().toISOString()
-              });
-          }
-        }
-      }
-
-      console.log('Attempting to delete game from database...');
-      // Delete the game (players will cascade delete)
+      // Delete the game immediately (players will cascade delete)
+      // Each player is responsible for updating their own stats when they see the game ended
+      console.log('Deleting game from database...');
       const { error } = await supabase
         .from('games')
         .delete()
