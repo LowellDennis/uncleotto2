@@ -321,7 +321,7 @@ export const LobbyScreen: React.FC = () => {
   };
 
   const handleTakeOverHost = async () => {
-    if (!gameId || !currentPlayer) return;
+    if (!gameId || !currentPlayer || !user?.id) return;
 
     const currentHost = players.find(p => p.is_host);
     if (!currentHost) return;
@@ -333,6 +333,12 @@ export const LobbyScreen: React.FC = () => {
     }
 
     try {
+      // Update game's host_id
+      await supabase
+        .from('games')
+        .update({ host_id: user.id })
+        .eq('id', gameId);
+
       // Remove host from old host
       await supabase
         .from('players')
