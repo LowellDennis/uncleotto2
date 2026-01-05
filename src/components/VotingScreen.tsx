@@ -388,6 +388,18 @@ export const VotingScreen: React.FC = () => {
           setPlayers(prev => prev.map(p => 
             p.id === entry.player_id ? { ...p, score: newScore } : p
           ));
+          
+          // Update vote counts locally
+          setVoteCounts(prev => {
+            const updated = new Map(prev);
+            const currentCount = updated.get(entry.id) || 0;
+            if (currentCount <= 1) {
+              updated.delete(entry.id);
+            } else {
+              updated.set(entry.id, currentCount - 1);
+            }
+            return updated;
+          });
         }
         
         const newVotedEntries = new Set(votedEntries);
@@ -423,6 +435,14 @@ export const VotingScreen: React.FC = () => {
           setPlayers(prev => prev.map(p => 
             p.id === entry.player_id ? { ...p, score: newScore } : p
           ));
+          
+          // Update vote counts locally
+          setVoteCounts(prev => {
+            const updated = new Map(prev);
+            const currentCount = updated.get(entry.id) || 0;
+            updated.set(entry.id, currentCount + 1);
+            return updated;
+          });
         }
         
         const newVotedEntries = new Set(votedEntries);
