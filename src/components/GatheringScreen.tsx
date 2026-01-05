@@ -44,7 +44,6 @@ export function GatheringScreen() {
     // Load initial games
     const loadGames = async () => {
       const { games } = await gameService.getAvailableGames()
-      console.log('Loaded games:', games.length, games.map(g => ({id: g.id, name: g.name})));
       setAvailableGames(games)
     }
     loadGames();

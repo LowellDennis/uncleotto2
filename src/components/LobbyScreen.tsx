@@ -48,7 +48,6 @@ export const LobbyScreen: React.FC = () => {
             
             // If game started, navigate to entry screen
             if (updatedGame.status === 'in_progress') {
-              console.log('Game started, navigating to entry screen');
               navigate(`/game/${gameId}/entry`);
             }
           } else if (payload.eventType === 'DELETE') {
@@ -277,16 +276,12 @@ export const LobbyScreen: React.FC = () => {
 
     setLeavingGame(true);
     try {
-      console.log('Attempting to delete game:', gameId);
       const result = await gameService.deleteGame(gameId);
       if (result.error) {
-        console.error('Delete game error:', result.error);
         throw result.error;
       }
-      console.log('Game deleted successfully');
       navigate('/');
     } catch (err) {
-      console.error('Failed to end game:', err);
       setError('Failed to end game: ' + (err as any).message);
       setTimeout(() => setError(null), 5000);
       setLeavingGame(false);

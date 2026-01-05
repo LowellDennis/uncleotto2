@@ -139,6 +139,9 @@
    - Entry vote counts "(1)", "(2)" displayed next to each word
    - Checkmarks ✓ shown on voted entries
    - Both systems use immediate local update + database sync for instant feedback
+   - **Unanimous entries (4+ players only):** When an entry receives votes from all players except the entry's author, it's outlined in gold
+   - Gold styling: 3px solid gold border with glowing box-shadow effect
+   - Unanimous status updates in real-time as votes change
 
 5. **Database Migrations**
    - Migration file: `/supabase/migrations/add_user_stats.sql`
@@ -397,11 +400,15 @@
   - If the host confirms kicking player from the game
     - A message is displayed to all players stating "<Host-name> has kicked <player> from the game!".
 	- The kicked player is taken to the "Gathering Screen" and is not allowed to re-enter the game.
-- If a player (other than the host) clicks on the host's info in the player key:
-  - A pop-up asking "Are you sure you take over from <host-name> as host?" appears.
-  - If the player confirms taking over as host
-    - A message is displayed to all players stating "<player> has taken over as host!"
-	- The player who was the host becomes a normal player if still connected.
+- **Orphaned Game Handling:**
+  - If a non-host player clicks on the host's badge and the current host is no longer connected:
+    - "Take Over as Host" button appears for any player who has joined the game
+    - Confirmation dialog: "Are you sure you want to take over as host from [old host name]?"
+    - If confirmed:
+      - Player becomes new host (games.host_id updated, is_host flag set)
+      - Previous host becomes regular player if still connected
+      - New host can then use "End Game" to remove orphaned games
+  - Database schema includes updated RLS policy allowing players in a game to transfer host status
 
 ### Game Buttons
 - Normal buttons appear blue when active (clickable), and light blue when not active (not clickable).
@@ -625,6 +632,13 @@
   - Checking adds +1 to that player's score.
   - Unchecking subtracts -1 from that player's score.
 - **Vote counts are displayed in real-time** on each entry (e.g., "word (3)" shows 3 votes).
+- **Unanimous Entry Visual Indicator:**
+  - When an entry receives votes from all players except the entry's author (only in games with 4+ players):
+    - Entry is outlined with a 3px solid gold border
+    - Gold glow effect applied via box-shadow
+    - Indicates exceptional entry that achieved unanimous approval
+  - Status updates in real-time as votes change (appears/disappears dynamically)
+  - Requires: voteCount === (players.length - 1) AND players.length >= 4
 - After the resulting sentences, all players have a "Done Voting" button.
 - Pressing the "Done Voting" button:
   - Marks the player as ready (ready=true).

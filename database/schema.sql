@@ -74,9 +74,19 @@ CREATE POLICY "Games are viewable by everyone" ON games
 CREATE POLICY "Authenticated users can create games" ON games
   FOR INSERT WITH CHECK (auth.uid() = host_id);
 
--- Only the host can update their game
-CREATE POLICY "Hosts can update their games" ON games
-  FOR UPDATE USING (auth.uid() = host_id);
+-- Players can update games (allows host transfers and game updates)
+CREATE POLICY "Players can update games" ON games
+  FOR UPDATE USING (
+    -- Current host can update anything
+    auth.uid() = host_id
+    OR
+    -- Any player in the game can update (for host transfer)
+    EXISTS (
+      SELECT 1 FROM players p 
+      WHERE p.game_id = games.id 
+      AND p.user_id = auth.uid()
+    )
+  );
 
 -- Only the host can delete their game
 CREATE POLICY "Hosts can delete their games" ON games
