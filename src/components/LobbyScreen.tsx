@@ -165,10 +165,44 @@ export const LobbyScreen: React.FC = () => {
       setGame(gameResult.data);
       
       if (playersResult.error) throw playersResult.error;
-      setPlayers(playersResult.data || []);
+      const loadedPlayers = playersResult.data || [];
+      setPlayers(loadedPlayers);
       
-      const current = playersResult.data?.find(p => p.user_id === user?.id);
-      setCurrentPlayer(current || null);
+      // Check if there's a host
+      const hasHost = loadedPlayers.some(p => p.is_host);
+      
+      // If no host exists and there are players, auto-assign first player as host
+      if (!hasHost && loadedPlayers.length > 0) {
+        const newHost = loadedPlayers[0];
+        
+        // Update the first player to be the host
+        const { error: updateError } = await supabase
+          .from('players')
+          .update({ is_host: true })
+          .eq('id', newHost.id);
+        
+        if (!updateError) {
+          // Update local state
+          const updatedPlayers = loadedPlayers.map(p => 
+            p.id === newHost.id ? { ...p, is_host: true } : p
+          );
+          setPlayers(updatedPlayers);
+          
+          // Show message to all players
+          const message = newHost.user_id === user?.id
+            ? `The previous host left. You are now the host!`
+            : `The previous host left. ${newHost.name} is now the host.`;
+          alert(message);
+          
+          // Update currentPlayer if it's the new host
+          if (newHost.user_id === user?.id) {
+            setCurrentPlayer({ ...newHost, is_host: true });
+          }
+        }
+      } else {
+        const current = loadedPlayers.find(p => p.user_id === user?.id);
+        setCurrentPlayer(current || null);
+      }
       
       setLoading(false);
     } catch (err) {
