@@ -549,6 +549,7 @@ export const VotingScreen: React.FC = () => {
         <PlayerKey
           players={players}
           currentUserId={user?.id}
+          playersReady={playersReady}
           showKickButton={currentPlayer?.is_host || false}
           onKickPlayer={handleKickPlayer}
         />
