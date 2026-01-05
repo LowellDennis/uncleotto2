@@ -318,14 +318,22 @@ export const gameService = {
       // Delete the game immediately (players will cascade delete)
       // Each player is responsible for updating their own stats when they see the game ended
       console.log('Deleting game from database...');
-      const { error } = await supabase
+      const { data, error, count } = await supabase
         .from('games')
         .delete()
         .eq('id', gameId)
+        .select();
+
+      console.log('Delete result - data:', data, 'error:', error, 'count:', count);
 
       if (error) {
         console.error('Database delete error:', error);
         throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.error('Delete returned no data - RLS policy may be blocking');
+        throw new Error('Unable to delete game - permission denied');
       }
       
       console.log('Game deleted successfully from database');
