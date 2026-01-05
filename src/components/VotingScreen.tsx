@@ -39,6 +39,7 @@ export const VotingScreen: React.FC = () => {
   const [isDoneVoting, setIsDoneVoting] = useState(false);
   const [voteCounts, setVoteCounts] = useState<Map<string, number>>(new Map());
   const [playersReady, setPlayersReady] = useState<Set<string>>(new Set());
+  const [unanimousEntries, setUnanimousEntries] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
 
@@ -306,6 +307,20 @@ export const VotingScreen: React.FC = () => {
       });
       
       setVoteCounts(counts);
+      
+      // Detect unanimous entries (only for games with 4+ players)
+      if (players.length >= 4) {
+        const unanimous = new Set<string>();
+        const requiredVotes = players.length - 1; // Everyone except the author
+        
+        counts.forEach((count, entryId) => {
+          if (count === requiredVotes) {
+            unanimous.add(entryId);
+          }
+        });
+        
+        setUnanimousEntries(unanimous);
+      }
     } catch (err) {
     }
   };
@@ -596,11 +611,12 @@ export const VotingScreen: React.FC = () => {
                 const isOwnEntry = currentPlayer && entry.player_id === currentPlayer.id;
                 const isVoted = votedEntries.has(entry.id);
                 const voteCount = voteCounts.get(entry.id) || 0;
+                const isUnanimous = unanimousEntries.has(entry.id);
                 
                 return (
                   <span
                     key={entry.id}
-                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? '' : ' clickable'}${isVoted ? ' voted' : ''}`}
+                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? '' : ' clickable'}${isVoted ? ' voted' : ''}${isUnanimous ? ' unanimous' : ''}`}
                     style={{ backgroundColor: entry.playerColor }}
                     onClick={() => !isOwnEntry && !isDoneVoting && handleWordClick(entry)}
                     title={`${entry.playerName}'s ${category}`}

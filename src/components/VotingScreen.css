@@ -48,6 +48,9 @@
   padding: 6px;
   background: white;
   border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 100%;
@@ -95,6 +98,12 @@
 
 .word.voted {
   border: 3px solid rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+}
+
+.word.unanimous {
+  border: 3px solid gold;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
   font-weight: bold;
 }
 
