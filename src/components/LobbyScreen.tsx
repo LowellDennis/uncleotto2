@@ -312,6 +312,47 @@ export const LobbyScreen: React.FC = () => {
     }
   };
 
+  const handleTakeOverHost = async () => {
+    if (!gameId || !currentPlayer) return;
+
+    const currentHost = players.find(p => p.is_host);
+    if (!currentHost) return;
+
+    const message = `The host (${currentHost.name}) appears to be inactive. Do you want to take over as host?`;
+    
+    if (!confirm(message)) {
+      return;
+    }
+
+    try {
+      // Remove host from old host
+      await supabase
+        .from('players')
+        .update({ is_host: false })
+        .eq('id', currentHost.id);
+
+      // Make current player the host
+      const { error } = await supabase
+        .from('players')
+        .update({ is_host: true })
+        .eq('id', currentPlayer.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setPlayers(prev => prev.map(p => 
+        p.id === currentPlayer.id ? { ...p, is_host: true } :
+        p.id === currentHost.id ? { ...p, is_host: false } : p
+      ));
+      setCurrentPlayer({ ...currentPlayer, is_host: true });
+
+      alert(`You are now the host!`);
+    } catch (err) {
+      setError('Failed to take over as host');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
   if (loading) {
     return (
       <div className="lobby-screen">
@@ -404,6 +445,17 @@ export const LobbyScreen: React.FC = () => {
           </>
         ) : (
           <div className="loading">Loading players...</div>
+        )}
+
+        {!currentPlayer?.is_host && currentPlayer && (
+          <div className="lobby-actions">
+            <button 
+              className="take-over-button"
+              onClick={handleTakeOverHost}
+            >
+              Take Over as Host
+            </button>
+          </div>
         )}
 
         {(currentPlayer?.is_host || user?.id === game.host_id) && (
