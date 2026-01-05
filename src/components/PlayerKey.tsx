@@ -20,8 +20,14 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
   playersReady,
   showLifetimeScore = false
 }) => {
-  // Sort players by join order
-  const sortedPlayers = [...players].sort((a, b) => a.join_order - b.join_order);
+  // Sort players: host first, then by join order
+  const sortedPlayers = [...players].sort((a, b) => {
+    // Host always first
+    if (a.is_host && !b.is_host) return -1;
+    if (!a.is_host && b.is_host) return 1;
+    // Otherwise sort by join order
+    return a.join_order - b.join_order;
+  });
 
   const handlePlayerClick = (player: Player) => {
     if (showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId) {
