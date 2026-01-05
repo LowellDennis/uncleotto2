@@ -133,8 +133,12 @@
 
 4. **UI Display Rules**
    - LobbyScreen: Shows lifetime scores with message "Scores shown are lifetime scores"
-   - EntryScreen: Shows game scores (accumulated across rounds)
-   - VotingScreen: Shows game scores (real-time updates) and vote counts on entries after "Done Voting"
+   - EntryScreen: Shows game scores (accumulated across all rounds)
+   - VotingScreen: Shows game scores (real-time updates) with vote counts on entries
+   - **Vote counts update immediately via local state + real-time subscription (piggyback pattern)**
+   - Entry vote counts "(1)", "(2)" displayed next to each word
+   - Checkmarks ✓ shown on voted entries
+   - Both systems use immediate local update + database sync for instant feedback
 
 5. **Database Migrations**
    - Migration file: `/supabase/migrations/add_user_stats.sql`
@@ -156,27 +160,27 @@
    
    **A. Entry Phase**
    - All players enter their 6 word substitutions
-   - Game scores displayed (reset to 0 at start of each voting round)
+   - **Game scores displayed (accumulate across all rounds - not reset)**
    - Players click "Submit Entries" → button disappears, fields disabled
    - Message appears: "Waiting for other players to submit their entries..."
    - Entries remain visible
    - Checkmarks appear next to players who have submitted
-   - When all players submit → all auto-navigate to Voting Screen
+   - **When all players submit → all auto-navigate to Voting Screen**
    
    **B. Voting Phase**
-   - **Score Accumulation:** Scores persist across rounds (accumulate from previous voting rounds)
+   - **Score Accumulation:** Scores persist and accumulate across all rounds (never reset until game ends)
    - Generated sentences displayed with colored word contributions
-   - Players click words to vote for them
-   - Players click again to unvote
-   - Votes stored in votes table and increment player scores
-   - **Vote counts update in real-time** as all players vote (e.g., "word (3)" shows 3 votes)
+   - Players click words to vote for them (checkmark ✓ appears)
+   - Players click again to unvote (checkmark disappears)
+   - Vote counts displayed next to entries in real-time (e.g., "(1)", "(2)")
+   - **Both entry vote counts AND player badge scores update immediately via local state + real-time sync**
    - Scores update in real-time across all browsers (Supabase Realtime)
-   - Players click "Done Voting" → button hidden, entries become non-clickable
-   - Waiting message appears: "Waiting for other players to finish voting..."
-   - Sentences remain visible with vote counts continuing to update in real-time
-   - When all players ready → host increments game.current_round
-   - All players auto-navigate back to Entry Screen
-   - **Loop repeats indefinitely** (Entry → Wait for Entries → Voting → Entry...)
+   - Players click "Done Voting" → button hidden, checkmark appears on player badge
+   - Message appears: "Waiting for other players to finish voting..."
+   - Sentences remain visible and clickable with vote counts continuing to update
+   - **When all players ready → host increments game.current_round**
+   - **All players auto-navigate back to Entry Screen**
+   - **Loop repeats indefinitely** (Entry → Voting → Entry → Voting...)
 
 3. **Game Termination**
    - **Host Action:** Host clicks "End Game" button (available on all screens)
@@ -210,11 +214,13 @@
 
 5. **Critical Flow Rules**
    - Lobby Screen shown ONLY at game creation/join (not between rounds)
-   - **Scores accumulate across rounds within a game** (voting increments scores, not reset between rounds)
+   - **No separate waiting screens - waiting happens in-screen with messages**
+   - **Scores accumulate across all rounds (never reset until game ends)**
    - Game scores saved to lifetime totals only when game ends (not after each round)
    - Automatic navigation requires coordination: host performs DB updates, all clients listen for changes
-   - Vote counts displayed only after player clicks "Done Voting"
-   - Players remain on Voting Screen after clicking "Done Voting" (no separate waiting screen)
+   - **Vote counts and checkmarks displayed in real-time as players vote**
+   - **Entries remain clickable after "Done Voting" so players can see real-time vote updates**
+   - Players remain on Entry/Voting screens after completion (no screen transitions until all ready)
 
 ### Host Kick Functionality
 **CRITICAL: Hosts can kick players from any screen to manage disruptive behavior**
@@ -377,10 +383,9 @@
 - Series of boxes with each players name, assigned color, and score.
 - **Score Display:**
   - In the Lobby Screen: Shows **lifetime score** (cumulative across all games played)
-  - During gameplay (Entry, Waiting, Voting, Results): Shows **game score** (current game only)
-  - Game scores reset to 0 at the start of each voting round
+  - During gameplay (Entry, Voting): Shows **game score** (accumulated across all rounds, never reset)
   - Game scores are saved to lifetime totals when the host ends the game
-- May also contain a checkmark to indicate that they have finished the current activity.
+- Also contains a checkmark to indicate that they have finished the current activity (submitted entries or done voting).
 - Current activities include entering substitutions and voting.
 - The host appears first in the player key and has a gold star (★) to indicate that they are host.
 - So as to not take up too much vertical space, there should be at least 2 and hopefully more player boxes per line.
