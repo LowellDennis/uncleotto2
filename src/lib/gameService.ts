@@ -293,13 +293,20 @@ export const gameService = {
    */
   async deleteGame(gameId: string): Promise<{ error: any }> {
     try {
+      console.log('deleteGame called for:', gameId);
+      
       // Get all players with their scores before deleting
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('user_id, score')
         .eq('game_id', gameId);
 
-      if (playersError) throw playersError;
+      if (playersError) {
+        console.error('Error fetching players:', playersError);
+        throw playersError;
+      }
+      
+      console.log('Found players:', players?.length);
 
       // Update lifetime scores for all players
       if (players && players.length > 0) {
@@ -328,16 +335,22 @@ export const gameService = {
         }
       }
 
+      console.log('Attempting to delete game from database...');
       // Delete the game (players will cascade delete)
       const { error } = await supabase
         .from('games')
         .delete()
         .eq('id', gameId)
 
-      if (error) throw error
-
+      if (error) {
+        console.error('Database delete error:', error);
+        throw error;
+      }
+      
+      console.log('Game deleted successfully from database');
       return { error: null }
     } catch (error) {
+      console.error('deleteGame exception:', error);
       return { error }
     }
   },
