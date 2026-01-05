@@ -430,8 +430,9 @@ export const VotingScreen: React.FC = () => {
         setVotedEntries(newVotedEntries);
       }
       
-      // Recalculate vote counts
-      await loadVoteCounts();
+      // Reload vote counts after database update
+      // Small delay to ensure database changes are committed
+      setTimeout(() => loadVoteCounts(), 100);
     } catch (err) {
     }
   };
