@@ -8,6 +8,7 @@ interface PlayerKeyProps {
   currentUserId?: string;
   showKickButton?: boolean;
   onKickPlayer?: (playerId: string) => void;
+  onTakeOverHost?: () => void;
   playersReady?: Set<string>;
   showLifetimeScore?: boolean;
 }
@@ -17,6 +18,7 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
   currentUserId,
   showKickButton = false,
   onKickPlayer,
+  onTakeOverHost,
   playersReady,
   showLifetimeScore = false
 }) => {
@@ -30,6 +32,7 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
   });
 
   const handlePlayerClick = (player: Player) => {
+    // Host clicking on other players (kick functionality)
     if (showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId) {
       const willEndGame = players.length === 2;
       const message = willEndGame 
@@ -40,6 +43,14 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
         onKickPlayer?.(player.id);
       }
     }
+    // Non-host clicking on host (take over functionality)
+    else if (!showKickButton && player.is_host && onTakeOverHost && currentUserId && player.user_id !== currentUserId) {
+      const message = `The host (${player.name}) appears to be inactive. Do you want to take over as host?`;
+      
+      if (confirm(message)) {
+        onTakeOverHost();
+      }
+    }
   };
 
   return (
@@ -47,12 +58,13 @@ export const PlayerKey: React.FC<PlayerKeyProps> = ({
       <div className="player-list">
         {sortedPlayers.map((player) => {
           const isKickable = !!(showKickButton && !player.is_host && currentUserId && player.user_id !== currentUserId);
+          const isTakeOverable = !!(!showKickButton && player.is_host && onTakeOverHost && currentUserId && player.user_id !== currentUserId);
           const isReady = playersReady?.has(player.id) || false;
           return (
             <PlayerBadge
               key={player.id}
               player={player}
-              isKickable={isKickable}
+              isKickable={isKickable || isTakeOverable}
               onClick={() => handlePlayerClick(player)}
               showReady={isReady}
               showLifetimeScore={!!showLifetimeScore}

@@ -446,6 +446,7 @@ export const LobbyScreen: React.FC = () => {
               currentUserId={user?.id}
               showKickButton={currentPlayer?.is_host || user?.id === game.host_id}
               onKickPlayer={handleKickPlayer}
+              onTakeOverHost={!currentPlayer?.is_host && currentPlayer ? handleTakeOverHost : undefined}
               showLifetimeScore={true}
             />
             <p style={{ textAlign: 'center', fontSize: '0.85em', color: '#666', marginTop: '8px', marginBottom: '16px' }}>
@@ -454,17 +455,6 @@ export const LobbyScreen: React.FC = () => {
           </>
         ) : (
           <div className="loading">Loading players...</div>
-        )}
-
-        {!currentPlayer?.is_host && currentPlayer && (
-          <div className="lobby-actions">
-            <button 
-              className="take-over-button"
-              onClick={handleTakeOverHost}
-            >
-              Take Over as Host
-            </button>
-          </div>
         )}
 
         {(currentPlayer?.is_host || user?.id === game.host_id) && (

@@ -401,9 +401,8 @@
     - A message is displayed to all players stating "<Host-name> has kicked <player> from the game!".
 	- The kicked player is taken to the "Gathering Screen" and is not allowed to re-enter the game.
 - **Orphaned Game Handling:**
-  - If a non-host player clicks on the host's badge and the current host is no longer connected:
-    - "Take Over as Host" button appears for any player who has joined the game
-    - Confirmation dialog: "Are you sure you want to take over as host from [old host name]?"
+  - If a non-host player clicks on the host's badge:
+    - Confirmation dialog: "The host ([host name]) appears to be inactive. Do you want to take over as host?"
     - If confirmed:
       - Player becomes new host (games.host_id updated, is_host flag set)
       - Previous host becomes regular player if still connected
