@@ -1,6 +1,6 @@
 import './Footer.css'
 
-const APP_VERSION = '2026.0104.0032' // YYYY.MMDD.HHmm format
+const APP_VERSION = '2026.0104.1949' // YYYY.MMDD.HHmm format
 
 export function Footer() {
   return (
