@@ -498,14 +498,16 @@
     - "Copyright © Cyberclops LLC" on left
     - "V YYYY.MMDD.HHmm" on right (e.g., "V 2026.0103.0300")
     - Version constant stored in Footer.tsx component
-    - **CRITICAL:** Version number MUST be updated with EVERY git push
+    - **CRITICAL RULE: Version number MUST be updated with EVERY SINGLE git push - NO EXCEPTIONS**
       - Format: YYYY.MMDD.HHmm (4-digit year, 2-digit month, 2-digit day, 2-digit hour, 2-digit minute)
-      - Used to verify cache clearing and confirm deployment on mobile devices
-      - Update Footer.tsx APP_VERSION constant before each git push
-    - **CRITICAL:** README.md MUST be updated with EVERY significant change
+      - Update Footer.tsx APP_VERSION constant BEFORE running git push
+      - This is MANDATORY for every commit - used to verify cache clearing and deployment
+      - **ALWAYS check if version was updated before pushing - make it a habit**
+    - **CRITICAL RULE: README.md MUST be updated with EVERY significant change**
       - Update relevant sections when changing user-facing messages, game flow, or UI behavior
       - Keep confirmation messages, button behaviors, and game rules current
       - Document new features, screens, or components as they're added
+      - Update BEFORE pushing, not after
 
 **UI Design Principles:**
 - Use horizontal divider lines instead of boxes to save screen real estate
