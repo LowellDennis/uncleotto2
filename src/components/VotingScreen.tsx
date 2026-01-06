@@ -42,6 +42,17 @@ export const VotingScreen: React.FC = () => {
   const [unanimousEntries, setUnanimousEntries] = useState<Set<string>>(new Set());
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
+  const gameRef = useRef<Game | null>(null);
+  const playersRef = useRef<Player[]>([]);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    gameRef.current = game;
+  }, [game]);
+  
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
 
   // Reset navigation flag when entering screen
   useEffect(() => {
@@ -49,8 +60,8 @@ export const VotingScreen: React.FC = () => {
   }, []);
 
   const loadVoteCounts = useCallback(async (gameData?: Game, playersCount?: number) => {
-    const currentGame = gameData || game;
-    const currentPlayersCount = playersCount ?? players.length;
+    const currentGame = gameData || gameRef.current;
+    const currentPlayersCount = playersCount ?? playersRef.current.length;
     
     if (!gameId || !currentGame) return;
     

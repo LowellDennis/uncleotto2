@@ -161,9 +161,7 @@ export const EntryScreen: React.FC = () => {
             if (readyCount === playerCount && !hasNavigated.current) {
               console.log('[EntryScreen] ALL READY - NAVIGATING NOW!');
               hasNavigated.current = true;
-              
-              // All players navigate to voting screen
-              setTimeout(() => navigate(`/game/${gameId}/voting`), 100);
+              navigate(`/game/${gameId}/voting`);
             }
             
             return updated;
@@ -324,8 +322,7 @@ export const EntryScreen: React.FC = () => {
         if (readyCount === playerCount && !hasNavigated.current) {
           console.log('[EntryScreen] ALL READY - NAVIGATING NOW!');
           hasNavigated.current = true;
-          // Navigate to voting screen
-          setTimeout(() => navigate(`/game/${gameId}/voting`), 100);
+          navigate(`/game/${gameId}/voting`);
         }
         
         return updated;
