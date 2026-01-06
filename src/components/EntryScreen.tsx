@@ -147,22 +147,23 @@ export const EntryScreen: React.FC = () => {
             setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
             
             // Check if all players are ready (submitted entries)
-            const allReady = updated.every(p => p.ready);
+            const readyCount = updated.filter(p => p.ready).length;
+            const playerCount = updated.length;
+            
             console.log('[EntryScreen] Player update:', {
               updatedPlayerId: updatedPlayer.id,
               updatedPlayerReady: updatedPlayer.ready,
-              allPlayersReady: allReady,
-              hasNavigated: hasNavigated.current,
-              playerCount: updated.length,
-              readyCount: updated.filter(p => p.ready).length
+              readyCount: readyCount,
+              playerCount: playerCount,
+              hasNavigated: hasNavigated.current
             });
             
-            if (allReady && !hasNavigated.current) {
-              console.log('[EntryScreen] All players ready! Navigating to voting...');
+            if (readyCount === playerCount && !hasNavigated.current) {
+              console.log('[EntryScreen] ALL READY - NAVIGATING NOW!');
               hasNavigated.current = true;
               
               // All players navigate to voting screen
-              navigate(`/game/${gameId}/voting`);
+              setTimeout(() => navigate(`/game/${gameId}/voting`), 100);
             }
             
             return updated;
@@ -315,11 +316,16 @@ export const EntryScreen: React.FC = () => {
         setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
         
         // Check if all players are ready (submitted entries)
-        const allReady = updated.every(p => p.ready);
-        if (allReady && !hasNavigated.current) {
+        const readyCount = updated.filter(p => p.ready).length;
+        const playerCount = updated.length;
+        
+        console.log('[EntryScreen] Submit - readyCount:', readyCount, 'playerCount:', playerCount, 'hasNavigated:', hasNavigated.current);
+        
+        if (readyCount === playerCount && !hasNavigated.current) {
+          console.log('[EntryScreen] ALL READY - NAVIGATING NOW!');
           hasNavigated.current = true;
           // Navigate to voting screen
-          navigate(`/game/${gameId}/voting`);
+          setTimeout(() => navigate(`/game/${gameId}/voting`), 100);
         }
         
         return updated;
