@@ -229,7 +229,7 @@ export const VotingScreen: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId, navigate, user?.id, game, players, loadVoteCounts]);
+  }, [gameId, navigate, user?.id, loadVoteCounts]);
 
   const loadGameData = async () => {
     try {
