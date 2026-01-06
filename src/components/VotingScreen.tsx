@@ -43,6 +43,44 @@ export const VotingScreen: React.FC = () => {
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
 
+  const loadVoteCounts = useCallback(async () => {
+    if (!gameId || !game) return;
+    
+    try {
+      // Load all votes for this game and round
+      const { data: votesData, error } = await supabase
+        .from('votes')
+        .select('entry_id')
+        .eq('game_id', gameId)
+        .eq('round', game.current_round);
+      
+      if (error) {
+        return;
+      }
+      
+      // Count votes per entry
+      const counts = new Map<string, number>();
+      votesData?.forEach(vote => {
+        counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
+      });
+      
+      setVoteCounts(counts);
+      
+      // Detect unanimous entries (all players except the author voted for it)
+      const unanimous = new Set<string>();
+      const requiredVotes = players.length - 1; // Everyone except the author
+      
+      counts.forEach((count, entryId) => {
+        if (count >= requiredVotes) {
+          unanimous.add(entryId);
+        }
+      });
+      
+      setUnanimousEntries(unanimous);
+    } catch (err) {
+    }
+  }, [gameId, game, players.length]);
+
   useEffect(() => {
     if (!gameId) {
       navigate('/');
@@ -294,44 +332,6 @@ export const VotingScreen: React.FC = () => {
     // This is now just a placeholder - we load counts from the database
     loadVoteCounts();
   };
-  
-  const loadVoteCounts = useCallback(async () => {
-    if (!gameId || !game) return;
-    
-    try {
-      // Load all votes for this game and round
-      const { data: votesData, error } = await supabase
-        .from('votes')
-        .select('entry_id')
-        .eq('game_id', gameId)
-        .eq('round', game.current_round);
-      
-      if (error) {
-        return;
-      }
-      
-      // Count votes per entry
-      const counts = new Map<string, number>();
-      votesData?.forEach(vote => {
-        counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
-      });
-      
-      setVoteCounts(counts);
-      
-      // Detect unanimous entries (all players except the author voted for it)
-      const unanimous = new Set<string>();
-      const requiredVotes = players.length - 1; // Everyone except the author
-      
-      counts.forEach((count, entryId) => {
-        if (count >= requiredVotes) {
-          unanimous.add(entryId);
-        }
-      });
-      
-      setUnanimousEntries(unanimous);
-    } catch (err) {
-    }
-  }, [gameId, game, players.length]);
 
   const generateSentences = (entries: WordEntry[], players: Player[]): Sentence[] => {
     const categories = ['title', 'name', 'verb', 'adverb', 'preposition', 'noun'] as const;
