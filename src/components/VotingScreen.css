@@ -70,16 +70,14 @@
   font-weight: 500;
   position: relative;
   max-width: 100%;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.word-text {
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
-  flex-shrink: 1;
-  min-width: 0;
-  font-weight: 500;
-  position: relative;
-  max-width: 100%;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
 }
 
 .word.clickable {
@@ -96,21 +94,10 @@
   cursor: not-allowed;
 }
 
-.word.voted {
-  border: 3px solid rgba(0, 0, 0, 0.8);
-  font-weight: bold;
-}
-
 .word.unanimous {
   border: 3px solid gold;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
   font-weight: bold;
-}
-
-.vote-check {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: rgba(0, 0, 0, 0.8);
 }
 
 .vote-count {
@@ -118,6 +105,7 @@
   font-weight: normal;
   color: rgba(0, 0, 0, 0.6);
   margin-left: 2px;
+  white-space: nowrap;
 }
 
 .voting-actions {

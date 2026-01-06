@@ -111,19 +111,29 @@ export const VotingScreen: React.FC = () => {
               const currentUserPlayer = updated.find(p => p.user_id === user?.id);
               
               // If this is the host, increment the round
-              if (currentUserPlayer?.is_host && game) {
+              if (currentUserPlayer?.is_host) {
+                // Get fresh game data
                 supabase
                   .from('games')
-                  .update({ current_round: game.current_round + 1 })
+                  .select('current_round')
                   .eq('id', gameId)
-                  .then(() => {
-                    // Reset all players' ready state
-                    updated.forEach(p => {
+                  .single()
+                  .then(({ data: freshGame }) => {
+                    if (freshGame) {
                       supabase
-                        .from('players')
-                        .update({ ready: false })
-                        .eq('id', p.id);
-                    });
+                        .from('games')
+                        .update({ current_round: freshGame.current_round + 1 })
+                        .eq('id', gameId)
+                        .then(() => {
+                          // Reset all players' ready state
+                          updated.forEach(p => {
+                            supabase
+                              .from('players')
+                              .update({ ready: false })
+                              .eq('id', p.id);
+                          });
+                        });
+                    }
                   });
               }
             }
@@ -308,19 +318,17 @@ export const VotingScreen: React.FC = () => {
       
       setVoteCounts(counts);
       
-      // Detect unanimous entries (only for games with 4+ players)
-      if (players.length >= 4) {
-        const unanimous = new Set<string>();
-        const requiredVotes = players.length - 1; // Everyone except the author
-        
-        counts.forEach((count, entryId) => {
-          if (count === requiredVotes) {
-            unanimous.add(entryId);
-          }
-        });
-        
-        setUnanimousEntries(unanimous);
-      }
+      // Detect unanimous entries (all players except the author voted for it)
+      const unanimous = new Set<string>();
+      const requiredVotes = players.length - 1; // Everyone except the author
+      
+      counts.forEach((count, entryId) => {
+        if (count >= requiredVotes) {
+          unanimous.add(entryId);
+        }
+      });
+      
+      setUnanimousEntries(unanimous);
     } catch (err) {
     }
   };
@@ -534,6 +542,36 @@ export const VotingScreen: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Failed to kick player');
     }
   };
+
+  const handleTakeOverHost = async () => {
+    if (!currentPlayer || !game) return;
+
+    try {
+      // Get current host
+      const currentHost = players.find(p => p.is_host);
+      if (!currentHost) return;
+
+      // Update old host to not be host
+      await supabase
+        .from('players')
+        .update({ is_host: false })
+        .eq('id', currentHost.id);
+
+      // Make current player the new host
+      await supabase
+        .from('players')
+        .update({ is_host: true })
+        .eq('id', currentPlayer.id);
+
+      // Update game host_id
+      await supabase
+        .from('games')
+        .update({ host_id: currentPlayer.user_id })
+        .eq('id', game.id);
+    } catch (err) {
+      setError('Failed to take over as host');
+    }
+  };
   if (loading) {
     return <div className="loading">Loading voting...</div>;
   }
@@ -586,6 +624,7 @@ export const VotingScreen: React.FC = () => {
           playersReady={playersReady}
           showKickButton={currentPlayer?.is_host || false}
           onKickPlayer={handleKickPlayer}
+          onTakeOverHost={!currentPlayer?.is_host && currentPlayer ? handleTakeOverHost : undefined}
         />
 
         {isDoneVoting && (
@@ -616,14 +655,13 @@ export const VotingScreen: React.FC = () => {
                 return (
                   <span
                     key={entry.id}
-                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? '' : ' clickable'}${isVoted ? ' voted' : ''}${isUnanimous ? ' unanimous' : ''}`}
+                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? '' : ' clickable'}${isUnanimous ? ' unanimous' : ''}`}
                     style={{ backgroundColor: entry.playerColor }}
                     onClick={() => !isOwnEntry && !isDoneVoting && handleWordClick(entry)}
                     title={`${entry.playerName}'s ${category}`}
                   >
-                    {entry.text}
-                    {voteCount > 0 && <span className="vote-count"> ({voteCount})</span>}
-                    {isVoted && <span className="vote-check">✓</span>}
+                    <span className="word-text">{entry.text}</span>
+                    {voteCount > 0 && <span className="vote-count">({voteCount})</span>}
                   </span>
                 );
               })}
