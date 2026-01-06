@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameHeader';
 import { Caption } from './Caption';
@@ -191,7 +191,7 @@ export const VotingScreen: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId, navigate, user?.id]);
+  }, [gameId, navigate, user?.id, game, players, loadVoteCounts]);
 
   const loadGameData = async () => {
     try {
@@ -295,7 +295,7 @@ export const VotingScreen: React.FC = () => {
     loadVoteCounts();
   };
   
-  const loadVoteCounts = async () => {
+  const loadVoteCounts = useCallback(async () => {
     if (!gameId || !game) return;
     
     try {
@@ -331,7 +331,7 @@ export const VotingScreen: React.FC = () => {
       setUnanimousEntries(unanimous);
     } catch (err) {
     }
-  };
+  }, [gameId, game, players.length]);
 
   const generateSentences = (entries: WordEntry[], players: Player[]): Sentence[] => {
     const categories = ['title', 'name', 'verb', 'adverb', 'preposition', 'noun'] as const;
@@ -648,6 +648,7 @@ export const VotingScreen: React.FC = () => {
                 if (!entry) return null;
                 
                 const isOwnEntry = currentPlayer && entry.player_id === currentPlayer.id;
+                const isVoted = votedEntries.has(entry.id);
                 const voteCount = voteCounts.get(entry.id) || 0;
                 const isUnanimous = unanimousEntries.has(entry.id);
                 
@@ -661,6 +662,7 @@ export const VotingScreen: React.FC = () => {
                   >
                     <span className="word-text">{entry.text}</span>
                     {voteCount > 0 && <span className="vote-count">({voteCount})</span>}
+                    {isVoted && <span className="vote-check">✓</span>}
                   </span>
                 );
               })}
