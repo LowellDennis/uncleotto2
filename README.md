@@ -136,12 +136,13 @@
    - EntryScreen: Shows game scores (accumulated across all rounds)
    - VotingScreen: Shows game scores (real-time updates) with vote counts on entries
    - **Vote counts update immediately via local state + real-time subscription (piggyback pattern)**
-   - Entry vote counts "(1)", "(2)" displayed next to each word
-   - Checkmarks ✓ shown on voted entries
+   - Entry vote counts "(1)", "(2)" displayed next to each word, visible to ALL players
+   - Vote counts use white-space: nowrap to prevent splitting across lines
    - Both systems use immediate local update + database sync for instant feedback
-   - **Unanimous entries (4+ players only):** When an entry receives votes from all players except the entry's author, it's outlined in gold
-   - Gold styling: 3px solid gold border with glowing box-shadow effect
+   - **Unanimous entries:** When an entry receives votes from all players except the entry's author, it's outlined in gold
+   - Gold styling: 3px solid gold border with glowing box-shadow effect (rgba(255, 215, 0, 0.6))
    - Unanimous status updates in real-time as votes change
+   - No individual checkmarks on entries (only total vote count shown)
 
 5. **Database Migrations**
    - Migration file: `/supabase/migrations/add_user_stats.sql`
@@ -400,14 +401,16 @@
   - If the host confirms kicking player from the game
     - A message is displayed to all players stating "<Host-name> has kicked <player> from the game!".
 	- The kicked player is taken to the "Gathering Screen" and is not allowed to re-enter the game.
-- **Orphaned Game Handling:**
+- **Take Over Host Functionality:**
+  - Available on all screens: LobbyScreen, EntryScreen, VotingScreen
   - If a non-host player clicks on the host's badge:
     - Confirmation dialog: "The host ([host name]) appears to be inactive. Do you want to take over as host?"
     - If confirmed:
       - Player becomes new host (games.host_id updated, is_host flag set)
       - Previous host becomes regular player if still connected
-      - New host can then use "End Game" to remove orphaned games
-  - Database schema includes updated RLS policy allowing players in a game to transfer host status
+      - New host gains access to "End Game" button and kick functionality
+      - No visible "Take Over As Host" button (triggered only by clicking host badge)
+  - Database schema includes RLS policy allowing players in a game to transfer host status
 
 ### Game Buttons
 - Normal buttons appear blue when active (clickable), and light blue when not active (not clickable).
@@ -626,18 +629,19 @@
   - No polling is used - updates are event-driven via database triggers.
   - Database UPDATE operations directly modify player.score, broadcasting to all subscribed clients.
 - When a player clicks on a part of a sentence contributed by another player:
-  - A checkmark appears beside it.
-  - If they click again the checkmark disappears.
-  - Checking adds +1 to that player's score.
-  - Unchecking subtracts -1 from that player's score.
+  - Vote is recorded and +1 is added to that player's score.
+  - If they click again the vote is removed and -1 is subtracted from that player's score.
+  - Vote count displayed next to entry updates immediately for ALL players.
 - **Vote counts are displayed in real-time** on each entry (e.g., "word (3)" shows 3 votes).
+  - Vote counts visible to all players (not just the voter).
+  - Vote counts formatted with white-space: nowrap to stay on same line as entry text.
 - **Unanimous Entry Visual Indicator:**
-  - When an entry receives votes from all players except the entry's author (only in games with 4+ players):
+  - When an entry receives votes from all players except the entry's author:
     - Entry is outlined with a 3px solid gold border
-    - Gold glow effect applied via box-shadow
+    - Gold glow effect applied via box-shadow: 0 0 10px rgba(255, 215, 0, 0.6)
     - Indicates exceptional entry that achieved unanimous approval
   - Status updates in real-time as votes change (appears/disappears dynamically)
-  - Requires: voteCount === (players.length - 1) AND players.length >= 4
+  - Applies to all game sizes (not restricted to 4+ players)
 - After the resulting sentences, all players have a "Done Voting" button.
 - Pressing the "Done Voting" button:
   - Marks the player as ready (ready=true).
@@ -646,9 +650,10 @@
   - Sentences remain visible with vote counts continuing to update.
   - A checkmark appears beside their name in the player key.
 - **Automatic Game Flow:**
-  - When all players are marked ready (all have checkmarks), the host automatically increments the game round.
-  - All players are then navigated to the "Entry Screen" to start the next round.
-   - This creates an infinite loop: Entry → Voting → Entry (repeat).
+  - When all players are marked ready (all have checkmarks in player key), the host automatically increments the game round.
+  - Host fetches fresh game data and increments current_round in database.
+  - All players listen for round increment via real-time subscription and auto-navigate to Entry Screen.
+  - This creates an infinite loop: Entry → Voting → Entry (repeat until game ends).
 - **Game Termination Conditions:**
   - The host clicks the "End Game" button (see above).
   - If fewer than 2 players remain (due to disconnections or players leaving).
