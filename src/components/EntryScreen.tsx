@@ -148,7 +148,17 @@ export const EntryScreen: React.FC = () => {
             
             // Check if all players are ready (submitted entries)
             const allReady = updated.every(p => p.ready);
+            console.log('[EntryScreen] Player update:', {
+              updatedPlayerId: updatedPlayer.id,
+              updatedPlayerReady: updatedPlayer.ready,
+              allPlayersReady: allReady,
+              hasNavigated: hasNavigated.current,
+              playerCount: updated.length,
+              readyCount: updated.filter(p => p.ready).length
+            });
+            
             if (allReady && !hasNavigated.current) {
+              console.log('[EntryScreen] All players ready! Navigating to voting...');
               hasNavigated.current = true;
               
               // All players navigate to voting screen
