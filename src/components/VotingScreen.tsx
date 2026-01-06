@@ -43,8 +43,11 @@ export const VotingScreen: React.FC = () => {
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
 
-  const loadVoteCounts = useCallback(async () => {
-    if (!gameId || !game) return;
+  const loadVoteCounts = useCallback(async (gameData?: Game, playersCount?: number) => {
+    const currentGame = gameData || game;
+    const currentPlayersCount = playersCount ?? players.length;
+    
+    if (!gameId || !currentGame) return;
     
     try {
       // Load all votes for this game and round
@@ -52,7 +55,7 @@ export const VotingScreen: React.FC = () => {
         .from('votes')
         .select('entry_id')
         .eq('game_id', gameId)
-        .eq('round', game.current_round);
+        .eq('round', currentGame.current_round);
       
       if (error) {
         return;
@@ -68,7 +71,7 @@ export const VotingScreen: React.FC = () => {
       
       // Detect unanimous entries (all players except the author voted for it)
       const unanimous = new Set<string>();
-      const requiredVotes = players.length - 1; // Everyone except the author
+      const requiredVotes = currentPlayersCount - 1; // Everyone except the author
       
       counts.forEach((count, entryId) => {
         if (count >= requiredVotes) {
@@ -321,16 +324,11 @@ export const VotingScreen: React.FC = () => {
       const generatedSentences = generateSentences(entriesWithPlayerInfo, playersData);
       setSentences(generatedSentences);
       
-      // Calculate vote counts from player scores
-      calculateVoteCounts();
+      // Load vote counts with explicit game data
+      await loadVoteCounts(gameData, playersData.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load entries');
     }
-  };
-
-  const calculateVoteCounts = () => {
-    // This is now just a placeholder - we load counts from the database
-    loadVoteCounts();
   };
 
   const generateSentences = (entries: WordEntry[], players: Player[]): Sentence[] => {
