@@ -43,6 +43,11 @@ export const VotingScreen: React.FC = () => {
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
 
+  // Reset navigation flag when entering screen
+  useEffect(() => {
+    hasNavigated.current = false;
+  }, []);
+
   const loadVoteCounts = useCallback(async (gameData?: Game, playersCount?: number) => {
     const currentGame = gameData || game;
     const currentPlayersCount = playersCount ?? players.length;
@@ -492,6 +497,55 @@ export const VotingScreen: React.FC = () => {
 
       // Update local state
       setIsDoneVoting(true);
+      setCurrentPlayer(prev => prev ? { ...prev, ready: true } : null);
+      
+      // Check if all players are now ready
+      setPlayers(prev => {
+        const updated = prev.map(p => 
+          p.id === currentPlayer.id ? { ...p, ready: true } : p
+        );
+        
+        // Update playersReady set for checkmarks
+        setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
+        
+        // Check if all players are ready
+        const allReady = updated.every(p => p.ready);
+        if (allReady && !hasNavigated.current) {
+          hasNavigated.current = true;
+          
+          // Find current user in updated array to get fresh host status
+          const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+          
+          // If this is the host, increment the round
+          if (currentUserPlayer?.is_host) {
+            // Get fresh game data
+            supabase
+              .from('games')
+              .select('current_round')
+              .eq('id', gameId!)
+              .single()
+              .then(({ data: freshGame }) => {
+                if (freshGame) {
+                  supabase
+                    .from('games')
+                    .update({ current_round: freshGame.current_round + 1 })
+                    .eq('id', gameId!)
+                    .then(() => {
+                      // Reset all players' ready state
+                      updated.forEach(p => {
+                        supabase
+                          .from('players')
+                          .update({ ready: false })
+                          .eq('id', p.id);
+                      });
+                    });
+                }
+              });
+          }
+        }
+        
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to finish voting');
     }
