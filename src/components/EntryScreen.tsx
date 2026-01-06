@@ -37,6 +37,11 @@ export const EntryScreen: React.FC = () => {
   const gameDeleted = useRef(false);
   const hasNavigated = useRef(false);
   
+  // Reset navigation flag when entering screen
+  useEffect(() => {
+    hasNavigated.current = false;
+  }, []);
+  
   // Initialize entries from localStorage if available
   const [entries, setEntries] = useState<EntryInputs>(() => {
     const storageKey = `entries-${gameId}-${user?.id}`;
