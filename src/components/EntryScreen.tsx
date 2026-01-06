@@ -351,9 +351,14 @@ export const EntryScreen: React.FC = () => {
     
     if (confirm('Are you sure you want to end the game?')) {
       try {
-        await gameService.deleteGame(game.id);
+        const { error } = await gameService.deleteGame(game.id);
+        if (error) {
+          console.error('Failed to delete game:', error);
+          throw error;
+        }
         navigate('/');
       } catch (err) {
+        console.error('Error ending game:', err);
         setError(err instanceof Error ? err.message : 'Failed to end game');
       }
     }
