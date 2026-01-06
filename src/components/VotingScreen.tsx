@@ -83,22 +83,30 @@ export const VotingScreen: React.FC = () => {
         counts.set(vote.entry_id, (counts.get(vote.entry_id) || 0) + 1);
       });
       
+      console.log('[VotingScreen] loadVoteCounts:', {
+        round: currentGame.current_round,
+        totalVotes: votesData?.length || 0,
+        entryCounts: Array.from(counts.entries())
+      });
+      
       setVoteCounts(counts);
       
-      // Detect unanimous entries (all players except the author voted for it)
+      // Detect unanimous entries (only for games with 4+ players)
       const unanimous = new Set<string>();
-      const requiredVotes = currentPlayersCount - 1; // Everyone except the author
-      
-      counts.forEach((count, entryId) => {
-        if (count >= requiredVotes) {
-          unanimous.add(entryId);
-        }
-      });
+      if (currentPlayersCount >= 4) {
+        const requiredVotes = currentPlayersCount - 1; // Everyone except the author
+        
+        counts.forEach((count, entryId) => {
+          if (count >= requiredVotes) {
+            unanimous.add(entryId);
+          }
+        });
+      }
       
       setUnanimousEntries(unanimous);
     } catch (err) {
     }
-  }, [gameId, game, players.length]);
+  }, [gameId]);
 
   useEffect(() => {
     if (!gameId) {
