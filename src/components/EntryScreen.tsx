@@ -151,18 +151,6 @@ export const EntryScreen: React.FC = () => {
             if (allReady && !hasNavigated.current) {
               hasNavigated.current = true;
               
-              // Check if current user is the host
-              const currentUserPlayer = updated.find(p => p.user_id === user?.id);
-              if (currentUserPlayer?.is_host) {
-                // Reset all players' ready state
-                updated.forEach(p => {
-                  supabase
-                    .from('players')
-                    .update({ ready: false })
-                    .eq('id', p.id);
-                });
-              }
-              
               // All players navigate to voting screen
               navigate(`/game/${gameId}/voting`);
             }
