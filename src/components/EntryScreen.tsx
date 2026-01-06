@@ -294,6 +294,27 @@ export const EntryScreen: React.FC = () => {
       
       if (readyError) throw readyError;
 
+      // Update local state immediately
+      setCurrentPlayer(prev => prev ? { ...prev, ready: true } : null);
+      setPlayers(prev => {
+        const updated = prev.map(p => 
+          p.id === currentPlayer.id ? { ...p, ready: true } : p
+        );
+        
+        // Update playersReady set for checkmarks
+        setPlayersReady(new Set(updated.filter(p => p.ready).map(p => p.id)));
+        
+        // Check if all players are ready (submitted entries)
+        const allReady = updated.every(p => p.ready);
+        if (allReady && !hasNavigated.current) {
+          hasNavigated.current = true;
+          // Navigate to voting screen
+          navigate(`/game/${gameId}/voting`);
+        }
+        
+        return updated;
+      });
+
       // Clear localStorage after successful submission
       if (gameId && user?.id) {
         const storageKey = `entries-${gameId}-${user?.id}`;
