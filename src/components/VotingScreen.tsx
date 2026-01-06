@@ -648,7 +648,6 @@ export const VotingScreen: React.FC = () => {
                 if (!entry) return null;
                 
                 const isOwnEntry = currentPlayer && entry.player_id === currentPlayer.id;
-                const isVoted = votedEntries.has(entry.id);
                 const voteCount = voteCounts.get(entry.id) || 0;
                 const isUnanimous = unanimousEntries.has(entry.id);
                 
