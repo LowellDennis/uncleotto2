@@ -603,10 +603,13 @@
 - After these is a "Submit Entries" button (normal) and right justified.
   - Button is not active (clickable) until all text boxes have received some input.
   - Upon clicking this button:
-    - Clicking players is taken to the "Wait for Entries Screen".
-    - A check appears beside their name in the player key.
+    - Button disappears and fields become disabled.
+    - Message appears: "Waiting for other players to submit their entries..."
+    - Entries remain visible.
+    - A checkmark appears beside their name in the player key.
+  - **Automatic Transition:** When all players have submitted, all players auto-navigate to the Voting Screen.
 - The host has the "End Game" button (see above).
-- All other players have a leave "Leave Game" button (see above)
+- All other players have a "Leave Game" button (see above)
 
 ### The Wait for Entries Screen
 - The game header is displayed (see above).
@@ -618,7 +621,7 @@
 ### The Voting Screen
 - The game header is displayed (see above).
 - Under this is the player key (see above) **showing game scores**.
-- **Scores are reset to 0 when the voting screen loads** for each new voting round.
+- **Scores accumulate across all rounds** (never reset until game ends).
 - For X players, there are X resulting sentences.
 - Resulting sentences should have an equal representation and distribution from all players as possible.
   - No player's entry should be used more than once but all should be used at least once.
@@ -643,12 +646,15 @@
     - Gold glow effect applied via box-shadow: 0 0 10px rgba(255, 215, 0, 0.6)
     - Indicates exceptional entry that achieved unanimous approval
   - Status updates in real-time as votes change (appears/disappears dynamically)
-  - Applies to all game sizes (not restricted to 4+ players)
-- After the resulting sentences, all players have a "Done Voting" button.
+  - Only shown for games with 4+ players (not displayed in 2-3 player games)
+- After the resulting sentences, all players have a "Done Voting" button (right-justified).
+- **Player Ready State:**
+  - When entering the voting screen, all players' ready states are reset to false (checkmarks cleared).
+  - Checkmarks only appear after a player clicks "Done Voting".
 - Pressing the "Done Voting" button:
   - Marks the player as ready (ready=true).
-  - Button disappears and entries become non-clickable.
-  - Message appears: "Waiting for other players to finish voting..."
+  - Button disappears and entries become disabled (50% opacity, not clickable).
+  - Message appears centered: "Waiting for other players to finish voting..."
   - Sentences remain visible with vote counts continuing to update.
   - A checkmark appears beside their name in the player key.
 - **Automatic Game Flow:**
