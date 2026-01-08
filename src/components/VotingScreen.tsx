@@ -534,14 +534,12 @@ export const VotingScreen: React.FC = () => {
         
         // Check if all players are ready
         const allReady = updated.every(p => p.ready);
-        if (allReady && !hasNavigated.current) {
-          hasNavigated.current = true;
-          
+        if (allReady) {
           // Find current user in updated array to get fresh host status
           const currentUserPlayer = updated.find(p => p.user_id === user?.id);
           
           // If this is the host, increment the round
-          if (currentUserPlayer?.is_host) {
+          if (currentUserPlayer?.is_host && !hasNavigated.current) {
             // Get fresh game data
             supabase
               .from('games')
