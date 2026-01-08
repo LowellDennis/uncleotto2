@@ -406,20 +406,11 @@ export const VotingScreen: React.FC = () => {
     try {
       const isVoted = votedEntries.has(entry.id);
       
-      console.log('[VotingScreen] Click entry:', { 
-        entryId: entry.id, 
-        entryText: entry.text,
-        isVoted, 
-        action: isVoted ? 'REMOVE' : 'ADD'
-      });
-      
       if (isVoted) {
         // REMOVE VOTE: Decrement player score and delete vote record
         const player = players.find(p => p.id === entry.player_id);
         if (player) {
           const newScore = Math.max(0, player.score - 1);
-          
-          console.log('[VotingScreen] Removing vote - player score:', player.score, '->', newScore);
           
           const { error } = await supabase
             .from('players')
@@ -455,7 +446,6 @@ export const VotingScreen: React.FC = () => {
             } else {
               updated.set(entry.id, newCount);
             }
-            console.log('[VotingScreen] Entry vote count:', currentCount, '->', newCount);
             return updated;
           });
         }
@@ -470,8 +460,6 @@ export const VotingScreen: React.FC = () => {
         const player = players.find(p => p.id === entry.player_id);
         if (player) {
           const newScore = player.score + 1;
-          
-          console.log('[VotingScreen] Adding vote - player score:', player.score, '->', newScore);
           
           // Update database
           const { error } = await supabase
@@ -505,7 +493,6 @@ export const VotingScreen: React.FC = () => {
             const currentCount = updated.get(entry.id) || 0;
             const newCount = currentCount + 1;
             updated.set(entry.id, newCount);
-            console.log('[VotingScreen] Entry vote count:', currentCount, '->', newCount);
             return updated;
           });
         }
