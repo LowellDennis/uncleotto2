@@ -154,9 +154,13 @@ export const VotingScreen: React.FC = () => {
         (payload) => {
           if (payload.eventType === 'UPDATE') {
             const updatedGame = payload.new as Game;
+            const currentGame = gameRef.current;
+            
+            console.log('[VotingScreen] Game update - current round:', currentGame?.current_round, '-> new round:', updatedGame.current_round, 'hasNavigated:', hasNavigated.current);
             
             // Check if round was incremented (all players ready, moving to next round)
-            if (game && updatedGame.current_round > game.current_round && !hasNavigated.current) {
+            if (currentGame && updatedGame.current_round > currentGame.current_round && !hasNavigated.current) {
+              console.log('[VotingScreen] Navigating to entry screen...');
               hasNavigated.current = true;
               navigate(`/game/${gameId}/entry`);
               return;
