@@ -406,17 +406,28 @@ export const VotingScreen: React.FC = () => {
     try {
       const isVoted = votedEntries.has(entry.id);
       
+      console.log('[VotingScreen] Click entry:', { 
+        entryId: entry.id, 
+        entryText: entry.text,
+        isVoted, 
+        action: isVoted ? 'REMOVE' : 'ADD'
+      });
+      
       if (isVoted) {
-        // Remove vote - decrement score and delete from votes table
+        // REMOVE VOTE: Decrement player score and delete vote record
         const player = players.find(p => p.id === entry.player_id);
         if (player) {
           const newScore = Math.max(0, player.score - 1);
+          
+          console.log('[VotingScreen] Removing vote - player score:', player.score, '->', newScore);
+          
           const { error } = await supabase
             .from('players')
             .update({ score: newScore })
             .eq('id', entry.player_id);
           
           if (error) {
+            console.error('[VotingScreen] Error updating player score:', error);
             return;
           }
           
@@ -438,23 +449,29 @@ export const VotingScreen: React.FC = () => {
           setVoteCounts(prev => {
             const updated = new Map(prev);
             const currentCount = updated.get(entry.id) || 0;
-            if (currentCount <= 1) {
+            const newCount = Math.max(0, currentCount - 1);
+            if (newCount === 0) {
               updated.delete(entry.id);
             } else {
-              updated.set(entry.id, currentCount - 1);
+              updated.set(entry.id, newCount);
             }
+            console.log('[VotingScreen] Entry vote count:', currentCount, '->', newCount);
             return updated;
           });
         }
         
+        // Remove from votedEntries
         const newVotedEntries = new Set(votedEntries);
         newVotedEntries.delete(entry.id);
         setVotedEntries(newVotedEntries);
+        
       } else {
-        // Add vote - increment score and insert into votes table
+        // ADD VOTE: Increment player score and insert vote record
         const player = players.find(p => p.id === entry.player_id);
         if (player) {
           const newScore = player.score + 1;
+          
+          console.log('[VotingScreen] Adding vote - player score:', player.score, '->', newScore);
           
           // Update database
           const { error } = await supabase
@@ -463,6 +480,7 @@ export const VotingScreen: React.FC = () => {
             .eq('id', entry.player_id);
           
           if (error) {
+            console.error('[VotingScreen] Error updating player score:', error);
             return;
           }
           
@@ -485,18 +503,20 @@ export const VotingScreen: React.FC = () => {
           setVoteCounts(prev => {
             const updated = new Map(prev);
             const currentCount = updated.get(entry.id) || 0;
-            updated.set(entry.id, currentCount + 1);
+            const newCount = currentCount + 1;
+            updated.set(entry.id, newCount);
+            console.log('[VotingScreen] Entry vote count:', currentCount, '->', newCount);
             return updated;
           });
         }
         
+        // Add to votedEntries
         const newVotedEntries = new Set(votedEntries);
         newVotedEntries.add(entry.id);
         setVotedEntries(newVotedEntries);
       }
-      
-      // Vote counts will update via real-time subscription
     } catch (err) {
+      console.error('[VotingScreen] Error in handleWordClick:', err);
     }
   };
 
