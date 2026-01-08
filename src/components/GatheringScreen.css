@@ -229,10 +229,6 @@
   }
 
   .button-row {
-    width: 100%;
-  }
-
-  .button-row .btn-normal {
-    width: 100%;
+    justify-content: flex-end;
   }
 }
