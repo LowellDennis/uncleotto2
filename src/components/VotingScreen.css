@@ -125,7 +125,15 @@
   margin-top: 12px;
   margin-bottom: 12px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+}
+
+.waiting-message {
+  font-family: 'Chewy', cursive;
+  font-size: 1rem;
+  color: #667eea;
+  text-align: center;
+  padding: 8px 20px;
 }
 
 .start-button {
