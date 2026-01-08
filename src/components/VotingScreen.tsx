@@ -169,14 +169,12 @@ export const VotingScreen: React.FC = () => {
             
             // Check if all players are ready
             const allReady = updated.every(p => p.ready);
-            if (allReady && !hasNavigated.current) {
-              hasNavigated.current = true;
-              
+            if (allReady) {
               // Find current user in updated array to get fresh host status
               const currentUserPlayer = updated.find(p => p.user_id === user?.id);
               
               // If this is the host, increment the round
-              if (currentUserPlayer?.is_host) {
+              if (currentUserPlayer?.is_host && !hasNavigated.current) {
                 // Get fresh game data
                 supabase
                   .from('games')
@@ -705,12 +703,6 @@ export const VotingScreen: React.FC = () => {
           onTakeOverHost={!currentPlayer?.is_host && currentPlayer ? handleTakeOverHost : undefined}
         />
 
-        {isDoneVoting && (
-          <div className="waiting-message">
-            Waiting for other players to finish voting...
-          </div>
-        )}
-
         <div className="sentences-container">
           <div className="voting-instructions">
             {isDoneVoting 
@@ -748,14 +740,12 @@ export const VotingScreen: React.FC = () => {
           ))}
         </div>
 
-        {isDoneVoting && (
-          <div className="waiting-message">
-            Waiting for other players to finish voting...
-          </div>
-        )}
-
         <div className="voting-actions">
-          {!isDoneVoting && (
+          {isDoneVoting ? (
+            <div className="waiting-message">
+              Waiting for other players to finish voting...
+            </div>
+          ) : (
             <button
               onClick={handleDoneVoting}
               className="start-button"
