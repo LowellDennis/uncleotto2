@@ -125,7 +125,7 @@
   margin-top: 12px;
   margin-bottom: 12px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .waiting-message {
@@ -134,6 +134,7 @@
   color: #667eea;
   text-align: center;
   padding: 8px 20px;
+  width: 100%;
 }
 
 .start-button {
