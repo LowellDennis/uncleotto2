@@ -193,12 +193,15 @@ export const VotingScreen: React.FC = () => {
             
             // Check if all players are ready
             const allReady = updated.every(p => p.ready);
+            console.log('[VotingScreen] Player update - all ready?', allReady, 'Ready players:', updated.filter(p => p.ready).map(p => p.name));
             if (allReady) {
               // Find current user in updated array to get fresh host status
               const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+              console.log('[VotingScreen] Is current user host?', currentUserPlayer?.is_host, 'hasNavigated:', hasNavigated.current);
               
               // If this is the host, increment the round
               if (currentUserPlayer?.is_host && !hasNavigated.current) {
+                console.log('[VotingScreen] Host incrementing round...');
                 // Get fresh game data
                 supabase
                   .from('games')
@@ -207,6 +210,7 @@ export const VotingScreen: React.FC = () => {
                   .single()
                   .then(({ data: freshGame }) => {
                     if (freshGame) {
+                      console.log('[VotingScreen] Current round:', freshGame.current_round, '-> Next:', freshGame.current_round + 1);
                       supabase
                         .from('games')
                         .update({ current_round: freshGame.current_round + 1 })
@@ -558,12 +562,15 @@ export const VotingScreen: React.FC = () => {
         
         // Check if all players are ready
         const allReady = updated.every(p => p.ready);
+        console.log('[VotingScreen] handleDoneVoting - all ready?', allReady, 'Ready players:', updated.filter(p => p.ready).map(p => p.name));
         if (allReady) {
           // Find current user in updated array to get fresh host status
           const currentUserPlayer = updated.find(p => p.user_id === user?.id);
+          console.log('[VotingScreen] handleDoneVoting - Is current user host?', currentUserPlayer?.is_host, 'hasNavigated:', hasNavigated.current);
           
           // If this is the host, increment the round
           if (currentUserPlayer?.is_host && !hasNavigated.current) {
+            console.log('[VotingScreen] handleDoneVoting - Host incrementing round...');
             // Get fresh game data
             supabase
               .from('games')
@@ -572,6 +579,7 @@ export const VotingScreen: React.FC = () => {
               .single()
               .then(({ data: freshGame }) => {
                 if (freshGame) {
+                  console.log('[VotingScreen] handleDoneVoting - Current round:', freshGame.current_round, '-> Next:', freshGame.current_round + 1);
                   supabase
                     .from('games')
                     .update({ current_round: freshGame.current_round + 1 })
@@ -747,7 +755,7 @@ export const VotingScreen: React.FC = () => {
                 return (
                   <span
                     key={entry.id}
-                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? '' : ' clickable'}${isUnanimous ? ' unanimous' : ''}`}
+                    className={`word${isOwnEntry ? ' own-word' : isDoneVoting ? ' disabled' : ' clickable'}${isUnanimous ? ' unanimous' : ''}`}
                     style={{ backgroundColor: entry.playerColor }}
                     onClick={() => !isOwnEntry && !isDoneVoting && handleWordClick(entry)}
                     title={`${entry.playerName}'s ${category}`}

@@ -89,6 +89,12 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.word.clickable.disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
 .word.own-word {
   opacity: 0.7;
   cursor: not-allowed;
