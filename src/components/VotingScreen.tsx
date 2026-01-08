@@ -59,6 +59,30 @@ export const VotingScreen: React.FC = () => {
     hasNavigated.current = false;
   }, []);
 
+  // Reset all players' ready state when entering voting screen
+  useEffect(() => {
+    if (!gameId) return;
+
+    const resetReadyState = async () => {
+      const { data: playersData } = await supabase
+        .from('players')
+        .select('id')
+        .eq('game_id', gameId);
+
+      if (playersData) {
+        // Reset ready state for all players
+        for (const player of playersData) {
+          await supabase
+            .from('players')
+            .update({ ready: false })
+            .eq('id', player.id);
+        }
+      }
+    };
+
+    resetReadyState();
+  }, [gameId]);
+
   const loadVoteCounts = useCallback(async (gameData?: Game, playersCount?: number) => {
     const currentGame = gameData || gameRef.current;
     const currentPlayersCount = playersCount ?? playersRef.current.length;
